@@ -41,9 +41,27 @@ The table presented below show the replicated results of Strodthoff et al. The r
 | Wavelet+NN                             | 0.837           | 0.834                    | 0.847                     | 0.871                       | 0.765            | 0.879              |
 | ensemble                               | 0.927           | 0.937                  | 0.935                     | 0.934                       | 0.901            | 0.966              |
 
+
+### Noise
+To be able to add noise to the test data we modified  the `prepare()` method in the `SCP_Experiment` class, defined in `./code/experiments/scp_experiment.py`. `prepare()` takes the arguments `add_noise=Boolean`, `noise_mean=Float`, `noise_std_dev=Float`.
+
+The image below show an example of a ECG with `noise_mean` = 0and `noise_std_dev`= 0, 0.1, 0.5 and 1
+
+![ECG with noise](./noise/from_paper/noise_all.png)
+
+The figures bellow show how the performance (in AUROC) decrease when more noise are added to the test ECGs.
+
+|                          |                          |
+:-------------------------:|:-------------------------:
+![](./noise/All.png)       |![](./noise/Diagnostic.png)
+![](./noise/Subdiagnostic.png)       |       ![](./noise/superdiagnostic.png)
+![](./noise/Form.png)       |       ![](./noise/Rhythm.png)
+
+
 ### Implementing a new model
 The following tables presents the results obtained in the original paper as well as the results obtained by the Inception Time model (**bold**) in this work.
 
+The model code for this model can be found in `./code/models/your_model.py` and the configurations for the different benchmark tasks are located here: `./code/configs/your_configs.py`. Finally, it also has to be specified in `./code/reproduce_results.py` which models that should be used and which benchmark tasks.
 
 
  #### 1. PTB-XL: all statements

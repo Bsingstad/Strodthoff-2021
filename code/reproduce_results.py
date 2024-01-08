@@ -7,16 +7,16 @@ from configs.your_configs import *
 import sys
 
 def main(datafolder, datafolder_icbeb, outputfolder):
-    
+
 
     models = [
-        #conf_fastai_xresnet1d101,
-        #conf_fastai_resnet1d_wang,
-        #conf_fastai_lstm,
-        #conf_fastai_lstm_bidir,
-        #conf_fastai_fcn_wang,
-        #conf_fastai_inception1d,
-        #conf_wavelet_standard_nn,
+        conf_fastai_xresnet1d101,
+        conf_fastai_resnet1d_wang,
+        conf_fastai_lstm,
+        conf_fastai_lstm_bidir,
+        conf_fastai_fcn_wang,
+        conf_fastai_inception1d,
+        conf_wavelet_standard_nn,
         conf_tf_inception,
         conf_tf_inception_all,
         conf_tf_inception_diagnostic,

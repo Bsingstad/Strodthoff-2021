@@ -6,9 +6,9 @@
 \section{Introduction}
 %A few sentences placing the work in high-level context. Limit it to a few paragraphs at most; your report is on reproducing a piece of work, you don’t have to motivate that work.
 An electrocardiogram (ECG) is a representation of the electrical system of the heart that can be obtained non-invasively, making it accessible and easy to use. For more than a century, ECG have been used by doctors and cardiologists to diagnose and prognosticate cardiovascular diseases. In the last decade, deep neural networks (DNN) or more specifically; convolutional neural networks (CNN)  have shown promising performance in interpreting ECGs. Previous studies have shown that CNNs can be used to detect various diseases from the ECG at cardiologist level performance~\cite{hannun_cardiologist-level_2019}. Others have shown that CNNs can detect markers in the ECG that are out of scope for a human interpreter, such as detecting paroxysmal atrial fibrillation~\cite{attia_et_al_artificial_2019} and determining age and gender from the ECG~\cite{attia_et_al_age_2019}. 
-However, Strodthoff et al. emphasize that two bottlenecks slow down the development in the field of artificial intelligence and ECG. First, there is a lack of large and open datasets and secondly, the open datasets miss some clearly defined benchmarking tasks with standardized evaluation procedures~\cite{strodthoff_deep_2020}. To address this, Wagner et al. 2020 published an open data set, PTB-XL, containing 21837 ECG records from 18885 patients~\cite{wagner_et_al_ptb-xl_2020}. Then, Strodthoff et al. proposed six different benchmarking tasks and used seven different state-of-the-art models on the PTB-XL dataset~\cite{strodthoff_deep_2020}.
+However, Strodthoff et al. emphasize that two bottlenecks slow down the development in the field of artificial intelligence and ECG. First, there is a lack of large and open datasets and secondly, the open datasets miss some clearly defined benchmarking tasks with standardized evaluation procedures~\cite{strodthoff_deep_2021}. To address this, Wagner et al. published an open data set, PTB-XL, containing 21837 ECG records from 18885 patients~\cite{wagner_et_al_ptb-xl_2020}. Then, Strodthoff et al. proposed six different benchmarking tasks and used seven different state-of-the-art models on the PTB-XL dataset~\cite{strodthoff_deep_2021}.
 
-In this paper, we have replicated the results from Strodthoff et al. who applied seven models on the six different benchmarking tasks~\cite{strodthoff_deep_2020}, by reusing the authors' open-source Python implementation with some minimal modifications to allow the code to be run in Google Colab. We replicated the results presented in Strodthoff et al. by running the repeated (three times) bootstraps on the test data. We also performed experiments with different levels of noise added to the test ECGs to evaluate the model's susceptibility and robustness to noise. Finally, we also proposed a new model, Inception Time (TensorFlow implementation). First, we performed a hyperparameter optimization to find the optimal configuration of the model for each of the six benchmark tasks. The models were evaluated according to the code provided in the GitHub repository published by Strodthoff et al.
+In this paper, we have replicated the results from Strodthoff et al. who applied seven models on the six different benchmarking tasks~\cite{strodthoff_deep_2021}, by reusing the authors' open-source Python implementation with some minimal modifications to allow the code to be run in Google Colab. We replicated the results presented in Strodthoff et al. by running the repeated (three times) bootstraps on the test data. We also performed experiments with different levels of noise added to the test ECGs to evaluate the model's susceptibility and robustness to noise. Finally, we also proposed a new model, Inception Time (TensorFlow implementation). First, we performed a hyperparameter optimization to find the optimal configuration of the model for each of the six benchmark tasks. The models were evaluated according to the code provided in the GitHub repository published by Strodthoff et al.
 
 
 
@@ -68,14 +68,14 @@ Our Jupyter notebook implementation of the source code downloads the PTB-XL Data
 
 We also implemented a new variation of the Inception model~\cite{ismail_fawaz_et_al_inceptiontime_2020}, which is already implemented by Strodthoff et al., but in contrast to Strodthoff et al.'s implementation, which was based on PyTorch, we here used TensorFlow. In addition, we optimized the hyperparameters of the model for each specific benchmark task. The hyperparameter tuning process is explained in depth later in a subsection of this chapter.
 
-The source code for our Jupyter Notebook implementation is openly available on GitHub~\footnote{Our modified version of Strodthoff et al's source code: \url{https://github.com/Bsingstad/ecg_ptbxl_benchmarking}}.
+The source code for our Jupyter Notebook implementation is openly available on GitHub~\footnote{Our modified version of Strodthoff et al's source code: \url{https://github.com/Bsingstad/Strodthoff-2021}}.
 
 
 
 \subsection{Datasets}
 %For each dataset include 1) relevant statistics such as the number of examples and label distributeions, 2) details of train / dev / test splits, 3) an explanation of any preprocessing done, and 4) a link to download the data (if available).
 
-The dataset used in this study was the PTB-XL dataset presented by Wagner et al 2020~\cite{wagner_et_al_ptb-xl_2020}. The dataset is stored on PhysioNet~\cite{wagner_ptb-xl_nodate,goldberger_physiobank_2000}, a data bank for physiological signals~\footnote{The PTB-XL dataset can be downloaded from here: \url{https://physionet.org/content/ptb-xl/1.0.3/}}. The dataset contains 21837 ECG recordings from 18885 patients and also comes with a large variety of machine- and cardiologist-annotated labels and diagnoses which in Strodthoff et al. were used to propose six different benchmark tasks. 
+The dataset used in this study was the PTB-XL dataset presented by Wagner et al ~\cite{wagner_et_al_ptb-xl_2020}. The dataset is stored on PhysioNet~\cite{wagner_ptb-xl_nodate,goldberger_physiobank_2000}, a data bank for physiological signals~\footnote{The PTB-XL dataset can be downloaded from here: \url{https://physionet.org/content/ptb-xl/1.0.3/}}. The dataset contains 21837 ECG recordings from 18885 patients and also comes with a large variety of machine- and cardiologist-annotated labels and diagnoses which in Strodthoff et al. were used to propose six different benchmark tasks. 
 
 \subsubsection{Benchmark tasks}
 The following benchmark tasks were proposed by Strodthoff et al.:
@@ -252,7 +252,7 @@ To run the experiments it is recommended to use GPUs. We did not have access to 
           [reproduce\_results.py]
         ]
         \end{forest}
-        \caption{The folder structure within the code folder in GitHub repository published by Strodthoff et al 2020~\cite{strodthoff_deep_2020}}
+        \caption{The folder structure within the code folder in GitHub repository published by Strodthoff et al.~\cite{strodthoff_deep_2021}}
     \label{fig:folder_struckture}
 \end{figure}
 
@@ -274,7 +274,7 @@ The results from running the seven models on the six benchmark tasks are present
 
 \begin{table}[h]
 \scriptsize
-\caption{Overall performance, in terms of AUROC, of the ECG classification algorithms proposed by Strodthoff et al.~\cite{strodthoff_deep_2020} The results are obtained taking the mean of repeated (3 times) bootstrapping on the test set. Table cells with green background indicate that the results obtained are within the confidence interval reported in Strodthoff et al.}
+\caption{Overall performance, in terms of AUROC, of the ECG classification algorithms proposed by Strodthoff et al.~\cite{strodthoff_deep_2021} The results are obtained taking the mean of repeated (3 times) bootstrapping on the test set. Table cells with green background indicate that the results obtained are within the confidence interval reported in Strodthoff et al.}
 \begin{tabular}{lllllll}
 \cellcolor[HTML]{C0C0C0}\textbf{Method} & \cellcolor[HTML]{C0C0C0}\textbf{All} & \cellcolor[HTML]{C0C0C0}\textbf{Diagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Subdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Superdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Form} & \cellcolor[HTML]{C0C0C0}\textbf{Rhythm} \\\hline
 fastai\_inception1d    & \cellcolor{green!25} 0.926 & \cellcolor{green!25} 0.930 & \cellcolor{green!25} 0.930 & \cellcolor{green!25} 0.918 & \cellcolor{green!25} 0.891 & \cellcolor{green!25} 0.953 \\

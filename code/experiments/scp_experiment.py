@@ -24,8 +24,6 @@ class SCP_Experiment():
         self.outputfolder = outputfolder
         self.datafolder = datafolder
         self.sampling_frequency = sampling_frequency
-        self.noise_mean = 0
-        self.noise_std_scale = 0.1
 
         # create folder structure if needed
         if not os.path.exists(self.outputfolder+self.experiment_name):
@@ -37,7 +35,7 @@ class SCP_Experiment():
             if not os.path.exists(outputfolder+self.experiment_name+'/data/'):
                 os.makedirs(self.outputfolder+self.experiment_name+'/data/')
 
-    def prepare(self, add_noise=False):
+    def prepare(self, add_noise=False, noise_mean=0.0, noise_std_dev = 0.1):
         # Load PTB-XL data
         self.data, self.raw_labels = utils.load_dataset(self.datafolder, self.sampling_frequency)
 
@@ -47,7 +45,7 @@ class SCP_Experiment():
         # Select relevant data and convert to one-hot
         self.data, self.labels, self.Y, _ = utils.select_data(self.data, self.labels, self.task, self.min_samples, self.outputfolder+self.experiment_name+'/data/')
         self.input_shape = self.data[0].shape
-        
+
         # 10th fold for testing (9th for now)
         self.X_test = self.data[self.labels.strat_fold == self.test_fold]
         self.y_test = self.Y[self.labels.strat_fold == self.test_fold]
@@ -64,7 +62,7 @@ class SCP_Experiment():
 
         # Add noise to test data
         if add_noise == True:
-            noise = np.random.normal(self.noise_mean,self.X_test.std() * self.noise_std_scale, size = self.X_test.shape)
+            noise = np.random.normal(noise_mean,self.X_test.std() * noise_std_dev, size = self.X_test.shape)
             self.X_test = self.X_test + noise
 
         # save train and test labels
@@ -194,10 +192,10 @@ class SCP_Experiment():
             # tr_df_point = utils.generate_results(range(len(y_train)), y_train, y_train_pred, thresholds)
             # tr_df_result = pd.DataFrame(
             #     np.array([
-            #         tr_df_point.mean().values, 
+            #         tr_df_point.mean().values,
             #         tr_df.mean().values,
             #         tr_df.quantile(0.05).values,
-            #         tr_df.quantile(0.95).values]), 
+            #         tr_df.quantile(0.95).values]),
             #     columns=tr_df.columns,
             #     index=['point', 'mean', 'lower', 'upper'])
 
@@ -205,22 +203,22 @@ class SCP_Experiment():
             te_df_point = utils.generate_results(range(len(y_test)), y_test, y_test_pred, thresholds)
             te_df_result = pd.DataFrame(
                 np.array([
-                    te_df_point.mean().values, 
+                    te_df_point.mean().values,
                     te_df.mean().values,
                     te_df.quantile(0.05).values,
-                    te_df.quantile(0.95).values]), 
-                columns=te_df.columns, 
+                    te_df.quantile(0.95).values]),
+                columns=te_df.columns,
                 index=['point', 'mean', 'lower', 'upper'])
 
             # val_df = pd.concat(pool.starmap(utils.generate_results, zip(val_samples, repeat(y_val), repeat(y_val_pred), repeat(thresholds))))
             # val_df_point = utils.generate_results(range(len(y_val)), y_val, y_val_pred, thresholds)
             # val_df_result = pd.DataFrame(
             #     np.array([
-            #         val_df_point.mean().values, 
+            #         val_df_point.mean().values,
             #         val_df.mean().values,
             #         val_df.quantile(0.05).values,
-            #         val_df.quantile(0.95).values]), 
-            #     columns=val_df.columns, 
+            #         val_df.quantile(0.95).values]),
+            #     columns=val_df.columns,
             #     index=['point', 'mean', 'lower', 'upper'])
 
             pool.close()
