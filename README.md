@@ -51,11 +51,11 @@ The image below show an example of a ECG with `noise_mean` = 0and `noise_std_dev
 
 The figures bellow show how the performance (in AUROC) decrease when more noise are added to the test ECGs.
 
-|                          |                          |
-:-------------------------:|:-------------------------:
-![](./noise/All.png)       |![](./noise/Diagnostic.png)
-![](./noise/Subdiagnostic.png)       |       ![](./noise/superdiagnostic.png)
-![](./noise/Form.png)       |       ![](./noise/Rhythm.png)
+|                               |                                 |
+:------------------------------:|:--------------------------------:
+![](./noise/All.png)            | ![](./noise/Diagnostic.png)
+![](./noise/Subdiagnostic.png)  | ![](./noise/superdiagnostic.png)
+![](./noise/Form.png)           | ![](./noise/Rhythm.png)
 
 
 ### Implementing a new model
