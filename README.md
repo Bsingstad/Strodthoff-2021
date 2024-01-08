@@ -1,7 +1,7 @@
 # [Re] Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL
 ## A replication of Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL by Strodthoff et al. 2021
 
-This github repository comprises our code replicating the experiments reported in *Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL*
+This github repository comprises our code replicating the experiments reported in [*Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL*[(https://ieeexplore.ieee.org/document/9190034)
 
 Full reference to the original paper :
 > N. Strodthoff, P. Wagner, T. Schaeffter, and W. Samek, ‘Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL’, IEEE Journal of Biomedical and Health Informatics, vol. 25, no. 5, pp. 1519–1528, May 2021, doi: 10.1109/JBHI.2020.3022989.
