@@ -45,7 +45,7 @@ The table presented below show the replicated results of Strodthoff et al. The r
 ### Noise
 To be able to add noise to the test data we modified  the `prepare()` method in the `SCP_Experiment` class, defined in `./code/experiments/scp_experiment.py`. `prepare()` takes the arguments `add_noise=Boolean`, `noise_mean=Float`, `noise_std_dev=Float`.
 
-The image below show an example of a ECG with `noise_mean` = 0and `noise_std_dev`= 0, 0.1, 0.5 and 1
+The image below show an example of a ECG with `noise_mean` = 0 and `noise_std_dev`= 0, 0.1, 0.5 and 1
 
 ![ECG with noise](./noise/from_paper/noise_all.png)
 
@@ -54,7 +54,7 @@ The figures bellow show how the performance (in AUROC) decrease when more noise 
 |                               |                                 |
 :------------------------------:|:--------------------------------:
 ![](./noise/All.png)            | ![](./noise/Diagnostic.png)
-![](./noise/Subdiagnostic.png)  | ![](./noise/superdiagnostic.png)
+![](./noise/Subdiagnostic.png)  | ![](./noise/Superdiagnostic.png)
 ![](./noise/Form.png)           | ![](./noise/Rhythm.png)
 
 
