@@ -1,0 +1,36 @@
+\section*{\centering Reproducibility Summary}
+
+%\textit{Template and style guide to \href{https://paperswithcode.com/rc2022}{ML Reproducibility Challenge 2022}. The following section of Reproducibility Summary is \textbf{mandatory}. This summary \textbf{must fit} in the first page, no exception will be allowed. When submitting your report in OpenReview, copy the entire summary and paste it in the abstract input field, where the sections must be separated with a blank line.
+%}
+
+%\textbf{We want to reproduce this paper: } https://ieeexplore.ieee.org/document/9190034
+
+\subsubsection*{Scope of Reproducibility}
+The authors of the original paper present six benchmark tasks on the previously published PTB-XL dataset, containing, 21837 12-lead ECGs from 18885 patients. They evaluate seven different neural network architectures on the six benchmark tasks. The authors have published all code and claim full reproducibility. In addition, they published code for easy implementation of new models. To validate the claim of reproducibility we implemented a new model and tested it, and the seven models presented by the authors of the original paper, on the six benchmark tasks.
+
+%State the main claim(s) of the original paper you are trying to reproduce (typically the main claim(s) of the paper).
+%This is meant to place the work in context, and to tell a reader the objective of the reproduction.
+
+\subsubsection*{Methodology}
+
+We used the publicly available code, published by the authors of the original paper, as a starting point for our experiment. Furthermore, we modified the code slightly in order to make it compatible with a cloud-hosted Jupyter Notebook, Google Colab. We ran the experiments using Google Colab Pro, using 32 GB RAM and either 1 x NVIDIA P100 or 1 x NVIDIA T4 GPU.  
+
+%Briefly describe what you did and which resources you used. For example, did you use author's code? Did you re-implement parts of the pipeline? You can use this space to list the hardware and total budget (e.g. GPU hours) for the experiments. 
+
+\subsubsection*{Results}
+
+%Start with your overall conclusion --- where did your results reproduce the original paper, and where did your results differ? Be specific and use precise language, e.g. "we reproduced the accuracy to within 1\% of reported value, which supports the paper's conclusion that it outperforms the baselines". Getting exactly the same number is in most cases infeasible, so you'll need to use your judgement to decide if your results support the original claim of the paper.%
+We successfully managed to reproduce the original work and also verified the validity of the main claims of the original paper. In addition, we showed how robust the models were to noise and finally implemented a new model that showed comparable performance with the models proposed in the original paper. 
+
+\subsubsection*{What was easy}
+%Describe which parts of your reproduction study were easy. For example, was it easy to run the author's code, or easy to re-implement their method based on the description in the paper? The goal of this section is to summarize to a reader which parts of the original paper they could easily apply to their problem.%
+The publicly available code published by the authors made it easy to reproduce and obtain the same results as reported in their paper.
+
+
+
+\subsubsection*{What was difficult}
+%Describe which parts of your reproduction study were difficult or took much more time than you expected. Perhaps the data was not available and you couldn't verify some experiments, or the author's code was broken and had to be debugged first. Or, perhaps some experiments just take too much time/resources to run and you couldn't verify them. The purpose of this section is to indicate to the reader which parts of the original paper are either difficult to re-use, or require a significant amount of work and resources to verify.
+We faced two main issues in this work. (1) running the code in a cloud-hosted jupyter notebook. This was done in order to get access to free or cheap GPUs. (2) Implement own models using the provided template. The description on how to use the base class and the configuration file could have been more detailed.
+
+\subsubsection*{Communication with original authors}
+Communication with the authors of the original paper was established early in the project and helped us by clarifying some aspects of the work. In the final stage of this project the authors of the original paper were given this manuscript in order to read it and provide feedback.

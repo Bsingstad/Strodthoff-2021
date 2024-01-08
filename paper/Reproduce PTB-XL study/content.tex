@@ -1,0 +1,464 @@
+%\textit{\textbf{The following section formatting is \textbf{optional}, you can also define sections as you deem fit.
+%\\
+%Focus on what future researchers or practitioners would find useful for reproducing or building upon the paper you choose.\\
+%For more information of our previous challenges, refer to the editorials \cite{Sinha:2022,Sinha:2021,Sinha:2020,Pineau:2019}.
+%}}
+\section{Introduction}
+%A few sentences placing the work in high-level context. Limit it to a few paragraphs at most; your report is on reproducing a piece of work, you don’t have to motivate that work.
+An electrocardiogram (ECG) is a representation of the electrical system of the heart that can be obtained non-invasively, making it accessible and easy to use. For more than a century, ECG have been used by doctors and cardiologists to diagnose and prognosticate cardiovascular diseases. In the last decade, deep neural networks (DNN) or more specifically; convolutional neural networks (CNN)  have shown promising performance in interpreting ECGs. Previous studies have shown that CNNs can be used to detect various diseases from the ECG at cardiologist level performance~\cite{hannun_cardiologist-level_2019}. Others have shown that CNNs can detect markers in the ECG that are out of scope for a human interpreter, such as detecting paroxysmal atrial fibrillation~\cite{attia_et_al_artificial_2019} and determining age and gender from the ECG~\cite{attia_et_al_age_2019}. 
+However, Strodthoff et al. emphasize that two bottlenecks slow down the development in the field of artificial intelligence and ECG. First, there is a lack of large and open datasets and secondly, the open datasets miss some clearly defined benchmarking tasks with standardized evaluation procedures~\cite{strodthoff_deep_2020}. To address this, Wagner et al. 2020 published an open data set, PTB-XL, containing 21837 ECG records from 18885 patients~\cite{wagner_et_al_ptb-xl_2020}. Then, Strodthoff et al. proposed six different benchmarking tasks and used seven different state-of-the-art models on the PTB-XL dataset~\cite{strodthoff_deep_2020}.
+
+In this paper, we have replicated the results from Strodthoff et al. who applied seven models on the six different benchmarking tasks~\cite{strodthoff_deep_2020}, by reusing the authors' open-source Python implementation with some minimal modifications to allow the code to be run in Google Colab. We replicated the results presented in Strodthoff et al. by running the repeated (three times) bootstraps on the test data. We also performed experiments with different levels of noise added to the test ECGs to evaluate the model's susceptibility and robustness to noise. Finally, we also proposed a new model, Inception Time (TensorFlow implementation). First, we performed a hyperparameter optimization to find the optimal configuration of the model for each of the six benchmark tasks. The models were evaluated according to the code provided in the GitHub repository published by Strodthoff et al.
+
+
+
+\section{Scope of reproducibility}
+\label{sec:claims}
+
+%Introduce the specific setting or problem addressed in this work, and list the main claims from the original paper. Think of this as writing out the main contributions of the original paper. Each claim should be relatively concise; some papers may not clearly list their claims, and one must formulate them in terms of the presented experiments. (For those familiar, these claims are roughly the scientific hypotheses evaluated in the original work.)
+
+%A claim should be something that can be supported or rejected by your data. An example is, ``Finetuning pretrained BERT on dataset X will have higher accuracy than an LSTM trained with GloVe embeddings.''
+%This is concise, and is something that can be supported by experiments.
+%An example of a claim that is too vague, which can't be supported by experiments, is ``Contextual embedding models have shown strong performance on a number of tasks. We will run experiments evaluating two types of contextual embedding models on datasets X, Y, and Z."
+
+%This section roughly tells a reader what to expect in the rest of the report. Clearly itemize the claims you are testing:
+%\begin{itemize}
+%    \item Claim 1
+%    \item Claim 2
+%    \item Claim 3
+%\end{itemize}
+
+Strodthoff et al. propose six benchmarking tasks for ECG classification using the PTB-XL dataset. Furthermore, they applied seven different state-of-the-art deep learning-based time series classification algorithms on these benchmark tasks and presented the result in terms of area under the receiver operating characteristic (AUROC) curve. Based on this work the authors have formulated four main claims: 
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+    \item Reproducible results by providing the full source code.
+    \item A framework for easy implementation of new model architectures.
+    \item Providing a reliable assessment of transfer learning in the ECG context and demonstrating the promising prospects of transfer learning from PTB-XL to other ECG classification datasets in the small dataset regime.
+    \item Providing evidence for the phenomenon of hidden stratification, a first evaluation of the diagnosis likelihood information provided within the dataset in comparison to model uncertainty and presenting an outlook to possible applications of interpretability methods in the field.
+\end{enumerate}
+
+In this replication paper, we have chosen to focus on the two first claims. To test the first claim, we will run the code multiple times and compare it with the published results in Strodthoff et al. to test reproducibility. To test the second claim, we will implement a model that has shown promising performance in similar ECG classification tasks to assess the ease of implementing a new model using the proposed framework by the original authors. In addition, we conducted a grid search to find the optimal hyperparameters for this model for each of the six tasks. Finally, we also want to evaluate the robustness of the models by adding various levels of noise to the ECGs in the test set prior to prediction and evaluation.
+
+%Each experiment in Section~\ref{sec:results} will support (at least) one of these claims, so a reader of your report should be able to separately understand the \emph{claims} and the \emph{evidence} that supports them.
+
+%\jdcomment{To organizers: I asked my students to connect the main claims and the experiments that supported them. For example, in this list above they could have ``Claim 1, which is supported by Experiment 1 in Figure 1.'' The benefit was that this caused the students to think about what their experiments were showing (as opposed to blindly rerunning each experiment and not considering how it fit into the overall story), but honestly it seemed hard for the students to understand what I was asking for.}
+
+\section{Methodology}
+%Explain your approach - did you use the author's code, or did you aim to re-implement the approach from the description in the paper? Summarize the resources (code, documentation, GPUs) that you used.
+
+To reproduce the results reported by Strodthoff et al., as well as to implement our proposed model, we started by forking and cloning the open available GitHub repository~\footnote{Source code Strodthoff et al. \url{https://github.com/helme/ecg\_ptbxl\_benchmarking}}. We used the freely available GPUs in Google Colab to train the models, although we had to modify the code slightly to make it work. Particularly, we modified the progress bar module used in the fastai python package to make the code compatible with the Google Colab Notebook~\footnote{The modified FastAI version is available here: \url{https://github.com/Bsingstad/fastai}}.
+
+\subsection{Model descriptions}
+%Include a description of each model or algorithm used. Be sure to list the type of model, the number of parameters, and other relevant info (e.g. if it's pretrained). 
+
+The following seven models were implemented and tested on the benchmark tasks in Strodthoff et al., and replicated in this paper:
+\begin{enumerate}[noitemsep,topsep=1pt]
+    \item A fully convolutional network (fcn\_wang)~\cite{wang_time_2017}
+    \item A standard ResNet-based architecture (resnet1d\_wang)~\cite{wang_time_2017, he_deep_2016}
+    \item A ResNet-based architecture inspired by recently improved ResNet architectures such as xResNets (xresnet1d101)~\cite{he_bag_2019}
+    \item Implementation of Inception Time architecture~\cite{ismail_fawaz_et_al_inceptiontime_2020} with the use of a concatenation pooling layer 
+    \item Unidirectional LSTM (lstm)~\cite{hochreiter_long_1997}
+    \item Bidirectional LSTM (\textit{lstm\_bidir})~\cite{hochreiter_long_1997}
+    \item A neural network classifier trained on wavelet features (Wavelet+NN) ~\cite{sharma_inferior_2018}\newline
+\end{enumerate}
+
+In addition to the above-mentioned models, the authors of Strodthoff et al. stated that they tested a unidirectional and bidirectional gated recurrent unit (GRU) network. However, the results from the GRU models were not reported in the paper nor on the benchmark leaderboard displayed in the README file of the author's GitHub repository. 
+
+Our Jupyter notebook implementation of the source code downloads the PTB-XL Dataset, the GitHub repository, and from the GitHub repository it imports the necessary Python packages and finally runs the reproduce\_results.py file that runs and validates the models as intended by the authors.
+
+We also implemented a new variation of the Inception model~\cite{ismail_fawaz_et_al_inceptiontime_2020}, which is already implemented by Strodthoff et al., but in contrast to Strodthoff et al.'s implementation, which was based on PyTorch, we here used TensorFlow. In addition, we optimized the hyperparameters of the model for each specific benchmark task. The hyperparameter tuning process is explained in depth later in a subsection of this chapter.
+
+The source code for our Jupyter Notebook implementation is openly available on GitHub~\footnote{Our modified version of Strodthoff et al's source code: \url{https://github.com/Bsingstad/ecg_ptbxl_benchmarking}}.
+
+
+
+\subsection{Datasets}
+%For each dataset include 1) relevant statistics such as the number of examples and label distributeions, 2) details of train / dev / test splits, 3) an explanation of any preprocessing done, and 4) a link to download the data (if available).
+
+The dataset used in this study was the PTB-XL dataset presented by Wagner et al 2020~\cite{wagner_et_al_ptb-xl_2020}. The dataset is stored on PhysioNet~\cite{wagner_ptb-xl_nodate,goldberger_physiobank_2000}, a data bank for physiological signals~\footnote{The PTB-XL dataset can be downloaded from here: \url{https://physionet.org/content/ptb-xl/1.0.3/}}. The dataset contains 21837 ECG recordings from 18885 patients and also comes with a large variety of machine- and cardiologist-annotated labels and diagnoses which in Strodthoff et al. were used to propose six different benchmark tasks. 
+
+\subsubsection{Benchmark tasks}
+The following benchmark tasks were proposed by Strodthoff et al.:
+
+\begin{itemize}[noitemsep,topsep=1pt]
+    \item \textit{diagnostic}
+    \item \textit{superdiagnostic}
+    \item \textit{sub-diagnostic}
+    \item \textit{form}
+    \item \textit{rhythm}
+    \item \textit{all}
+\end{itemize}
+
+The benchmark task named \textit{diagnostic} refers to classifying all the available diagnostic statements (40) in the dataset. \textit{Superdiagnostic} refers to the five main classes in the data set; Normal ECG (NORM), Conduction Disturbance (CD), Myocardial Infarction (MI), Hypertrophy (HYP), ST/T change (STTC), while \textit{sub-diagnostic} consider the 23 subclasses based on the 5 \textit{Superdiagnostic} classes. The \textit{form}-benchmark contains 19 classes describing the morphology of the ECG, such as abnormal QRS, inverted T-waves, etc. The \textit{rhythm}-benchmark contains 12 classes and describes the ECG rhythms, such as sinus rhythm, sinus bradycardia, atrial flutter, etc. Finally, the benchmark task called \textit{all} refers to the union of all diagnostic, rhythm and form statements (70 classes).
+
+\subsubsection{Data partitioning}
+As well as publishing the dataset Wagner et al also proposed a pre-defined data partitioning to ensure reproducible results and thereby making the reported results from different models and algorithms more comparable. The dataset was divided into 10 folds, where fold 1-8 should be considered as the training set, fold 9 as the validation set and fold 10 as the test set~\cite{wagner_et_al_ptb-xl_2020}. 
+
+\subsubsection{Preprocessing}
+The ECG recordings were converted to a WaveForm DataBase (WFDB) format with a resolution of 1 μV/LSB and 500Hz after the acquisition, and for the user’s convenience, due to memory, the ECGs were also downsampled to 100Hz.
+
+In our implementation, we also added a new argument to the function, which adds a desired level of noise to the test data. In this paper, we use this to evaluate how susceptible the models are to noise by monitoring the decline in AUROC.
+
+
+\subsection{Hyperparameters}
+%Describe how the hyperparameter values were set. If there was a hyperparameter search done, be sure to include the range of hyperparameters searched over, the method used to search (e.g. manual search, random search, Bayesian optimization, etc.), and the best hyperparameters found. Include the number of total experiments (e.g. hyperparameter trials). You can also include all results from that search (not just the best-found results).
+
+The configuration and hyperparameters used in the seven models proposed by Strodthoff et al. were kept when we replicated the results in this work. However, the hyperparameters related to the model we propose in this paper, Inception Time, were tuned by doing a grid search on a subset $=10\%$ of the total training set. A separate grid search was performed for each of the six benchmark tasks, resulting in six different sets of model configurations; one for each of the six benchmark tasks. Table~\ref{tab:HPsearchspace} shows the parameters and parameter space used in the grid search.
+
+
+
+\begin{table}[!hp]
+\scriptsize
+\centering
+\caption{Hyperparameter search space for the Inception Time model proposed in this paper}
+\begin{tabular}{ll}
+\cellcolor[HTML]{C0C0C0}\textbf{Parameter} & \cellcolor[HTML]{C0C0C0}\textbf{Values}\\\hline
+Epochs        & [15,20,25] \\
+Batch size        & [16, 32, 64]  \\
+Initial learning rate              & [0.001, 0.0001, 0.00001] \\
+Learning rate reduction         & [yes, no]  \\
+Model depth                & [6, 9, 12] \\
+Loss function          & [binary cross-entropy, weighted binary cross-entropy]  \\
+Kernel size      & [(20,10,5),(40,20,10),(60,30,15)]  \\\hline                              
+\end{tabular}
+\label{tab:HPsearchspace}
+\end{table}
+
+Figure~\ref{fig:gridsearch_violin} shows the results of the grid search performed for all six tasks. Parameter values that gave the same score on the test set are stacked horizontally, while higher scores give a higher value on the vertical axis. The configuration that resulted in the highest score on the vertical axis was selected for final training and testing on the test set.
+
+\begin{figure}[hp]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violindiagnostic.eps}
+        \caption{Diagnostic}
+        \label{fig:gridsearch_diag}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violinsuperdiagnostic.eps}
+        \caption{Superdiagnostic}
+        \label{fig:gridsearch_superdiag}
+     \end{subfigure}
+     \hfill
+      \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violinsubdiagnostic.eps}
+        \caption{Sub-diagnostic}
+        \label{fig:gridsearch_subdiag}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violinform.eps}
+        \caption{Form}
+        \label{fig:gridsearch_form}
+     \end{subfigure}
+          \hfill
+      \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violinrhythm.eps}
+        \caption{Rhythm}
+        \label{fig:gridsearch_rhythm}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/violinall.eps}
+        \caption{All}
+        \label{fig:gridsearch_all}
+     \end{subfigure}
+    \caption{Scores obtained when searching for the optimal model configurations for Inception Time. Each sub-plot represents the scores obtained, using grid search, for one specific benchmark task. %(\subref{fig:bce_vs_f1_acc}) shows the accuracy scores, %(\subref{fig:bce_vs_f1_f1}) shows the F1-scores and %(\subref{fig:bce_vs_f1_roc}) shows the AUROC scores.
+    }
+    \label{fig:gridsearch_violin}
+\end{figure}
+
+
+
+
+
+
+\subsection{Experimental setup and code}
+%Include a description of how the experiments were set up that's clear enough a reader could replicate the setup. 
+%Include a description of the specific measure used to evaluate the experiments (e.g. accuracy, precision@K, BLEU score, etc.). 
+%Provide a link to your code.
+The open available GitHub repository, published by Strodthoff et al, holds a folder named \textit{code}, which includes the Python modules and the code used to run the experiments reported in their work. In addition, the code folder contains templates on how to add new models to make it easier for others to implement new models and test them on the benchmark tasks. Figure~\ref{fig:folder_struckture} shows the files and sub-folders inside the code folder in the GitHub repository. In the configs folder, inside the code folder, there are Python files containing specific parameter configurations to use when training the different models. In case someone wants to implement a new model and apply it to the benchmark tasks they should specify configurations of the new model in the file named your\_configs.py. Furthermore, in the experiment folder, there is one file named \\ \verb|scp_experiment.py| which specifies the procedure of how the dataset is loaded into the model during training and testing and how the predictions are being stored and evaluated. If someone wants to propose a new model, they should specify the model name, defined in the configuration file, and import the module that includes the proposed model and assign the model to a variable in the \verb|perfom()| function. The utils folder contains four files. \verb|__init__.py| is necessary to define the util folder as a module, but do not contain any information. The \verb|convert_ICBEB.py| file is used to convert the data from a second database, China Physiological Signal Challenge 2018, to the same format as PTB-XL. \verb|stratisfy.py| is the file that was used by Strodthoff et al to partition the data into 10 folds. \verb|utils.py| contains Python modules used by the other Python files in the folder. \verb|Finetuning-Example.ipynb| is a Jupyter notebook that shows an example of how one can fine-tune new models and validate performance before submitting models to be validated on the benchmark tasks. Finally, the file named \verb|reproduce\_results.py| specifies how to run all selected models through the selected benchmark task.
+
+To reproduce the results from Strodthoff et al., the default settings in the code folder were used, while some modifications to the code had to be done to implement our proposed model. The results and the ranking of the models are based on the area under the receiver operating curve (AUROC). An AUROC score is reported for each model on each benchmark task. 
+
+\subsection{Computational requirements}
+%Include a description of the hardware used, such as the GPU or CPU the experiments were run on. 
+%For each model, include a measure of the average runtime (e.g. average time to predict labels for a given validation set with a particular batch size).
+%For each experiment, include the total computational requirements (e.g. the total GPU hours spent).
+%(Note: you'll likely have to record this as you run your experiments, so it's better to think about it ahead of time). Generally, consider the perspective of a reader who wants to use the approach described in the paper --- list what they would find useful.
+
+To run the experiments it is recommended to use GPUs. We did not have access to physical GPUs, so to get access to GPUs, we used Google Colab. To run Python code in Google Colab the code has to be run from a Jupyter notebook. Therefore we had to do some minimal modifications to the original code to make the code run in Google Colab. We used Google Colab with the Pro subscription giving us access to slightly more GPU and RAM compared to the free subscription. 
+
+
+\begin{figure}
+    \centering
+        \begin{forest}
+          for tree={
+            font=\ttfamily,
+            grow'=0,
+            child anchor=west,
+            parent anchor=south,
+            anchor=west,
+            calign=first,
+            edge path={
+              \noexpand\path [draw, \forestoption{edge}]
+              (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+            },
+            before typesetting nodes={
+              if n=1
+                {insert before={[,phantom]}}
+                {}
+            },
+            fit=band,
+            before computing xy={l=15pt},
+          }
+        [code/
+          [configs/
+            [\_\_init\_\_.py]
+            [fastai\_configs.py]
+            [wavelet\_configs.py]
+            [your\_configs.py]
+            ]
+          [experiments/
+            [scp\_experiment.py ]
+            ]
+          [models/
+           [\_\_init\_\_.py]
+           [base\_model.py]
+           [basic\_conv1d.py]
+           [fastai\_model.py]
+           [inception1d.py]
+           [resnet1d.py]
+           [rnn1d.py]
+           [timeseries\_utils.py]
+           [wavelet.py]
+           [xresnet1d.py]
+           [your\_model.py]
+          ]
+          [utils/
+            [\_\_init\_\_.py]
+            [convert\_ICBEB.py]
+            [stratisfy.py]
+            [utils.py]
+            ]
+          [Finetuning-Example.ipynb]
+          [\_\_init\_\_.py]
+          [reproduce\_results.py]
+        ]
+        \end{forest}
+        \caption{The folder structure within the code folder in GitHub repository published by Strodthoff et al 2020~\cite{strodthoff_deep_2020}}
+    \label{fig:folder_struckture}
+\end{figure}
+
+\newpage
+\section{Results}
+\label{sec:results}
+
+%Start with a high-level overview of your results. Do your results support the main claims of the original paper? Keep this section as factual and precise as possible, reserve your judgement and discussion points for the next "Discussion" section. 
+
+
+\subsection{Results reproducing original paper}
+%For each experiment, say 1) which claim in Section~\ref{sec:claims} it supports, and 2) if it successfully reproduced the associated experiment in the original paper. 
+%For example, an experiment training and evaluating a model on a dataset may support a claim that that model outperforms some baseline.
+%Logically group related results into sections. 
+
+The results from running the seven models on the six benchmark tasks are presented in Table~\ref{tab:rep_main}. In contrast to Strodthoff et al., we here repeated the training and bootstrapping three times to get an even more accurate result. The results are presented as the mean of the three experiments and the background of each value in the table indicates whether the obtained results are inside (green) or outside (red) the 95\% confidence interval presented in Strodthoff et al. 
+
+%\subsubsection{Result 1}
+
+\begin{table}[h]
+\scriptsize
+\caption{Overall performance, in terms of AUROC, of the ECG classification algorithms proposed by Strodthoff et al.~\cite{strodthoff_deep_2020} The results are obtained taking the mean of repeated (3 times) bootstrapping on the test set. Table cells with green background indicate that the results obtained are within the confidence interval reported in Strodthoff et al.}
+\begin{tabular}{lllllll}
+\cellcolor[HTML]{C0C0C0}\textbf{Method} & \cellcolor[HTML]{C0C0C0}\textbf{All} & \cellcolor[HTML]{C0C0C0}\textbf{Diagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Subdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Superdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Form} & \cellcolor[HTML]{C0C0C0}\textbf{Rhythm} \\\hline
+fastai\_inception1d    & \cellcolor{green!25} 0.926 & \cellcolor{green!25} 0.930 & \cellcolor{green!25} 0.930 & \cellcolor{green!25} 0.918 & \cellcolor{green!25} 0.891 & \cellcolor{green!25} 0.953 \\
+fastai\_xresnet1d101   & \cellcolor{green!25} 0.925 & \cellcolor{green!25} 0.934 & \cellcolor{green!25} 0.926 & \cellcolor{green!25} 0.929 & \cellcolor{green!25} 0.898 & \cellcolor{green!25} 0.959 \\
+fastai\_resnet1d\_wang & \cellcolor{green!25} 0.919 & \cellcolor{green!25} 0.932 & \cellcolor{green!25} 0.932 & \cellcolor{green!25} 0.929 & \cellcolor{green!25} 0.873 & \cellcolor{green!25} 0.943 \\
+fastai\_fcn\_wang      & \cellcolor{green!25} 0.913 & \cellcolor{green!25} 0.927 & \cellcolor{green!25} 0.922 & \cellcolor{green!25} 0.926 & \cellcolor{green!25} 0.868 & \cellcolor{green!25} 0.928 \\
+fastai\_lstm           & \cellcolor{green!25} 0.906 & \cellcolor{green!25} 0.926 & \cellcolor{green!25} 0.928 & \cellcolor{green!25} 0.927 & \cellcolor{green!25} 0.849 & \cellcolor{green!25} 0.950 \\
+fastai\_lstm\_bidir    & \cellcolor{green!25} 0.915 & \cellcolor{green!25} 0.929 & \cellcolor{green!25} 0.924 & \cellcolor{green!25} 0.924 & \cellcolor{red!25} 0.856   & \cellcolor{green!25} 0.949 \\
+Wavelet+NN             & \cellcolor{green!25} 0.837 & \cellcolor{red!25} 0.834   & \cellcolor{green!25} 0.847 & \cellcolor{green!25} 0.871 & \cellcolor{green!25} 0.765 & \cellcolor{green!25} 0.879 \\
+ensemble               & \cellcolor{green!25} 0.927 & \cellcolor{green!25} 0.937 & \cellcolor{green!25} 0.935 & \cellcolor{green!25} 0.934 & \cellcolor{green!25} 0.901 & \cellcolor{green!25} 0.966 \\\hline                            
+\end{tabular}
+\label{tab:rep_main}
+\end{table}
+
+
+
+\subsection{Results beyond the original paper}
+%Often papers don't include enough information to fully specify their experiments, so some additional experimentation may be necessary. For example, it might be the case that batch size was not specified, and so different batch sizes need to be evaluated to reproduce the original results. Include the results of any additional experiments here. Note: this won't be necessary for all reproductions.
+
+\subsubsection{Adding noise to ECGs in test data}
+Figure~\ref{fig:noise_spaghetti} presents the performance of the seven models in terms of AUROC score on the six different benchmark tasks proposed by Strodthoff et al. when different levels of stochastic noise were added to the test ECG. The stochastic noise was centered around zero with upper and lower boundaries given in terms of the standard deviation, $\sigma$, of all samples in the ECG test data multiplied by a coefficient $x$. In the experiments shown in Figure~\ref{fig:noise_spaghetti} $x$ were equal to 0, 0.1, 0.5 and 1. Figure~\ref{fig:ecg_noise_ex} shows an example of an ECG with gradually more noise added.
+\begin{figure}[hp]
+ 
+     \begin{subfigure}[b]{0.99\textwidth}
+        \centering
+        \includegraphics[trim=95 18 75 20, clip, width=0.725\textwidth]{images/no_noise.eps}
+        %\caption{Diagnostic}
+        \label{fig:nonoise}
+     \end{subfigure}
+     \hfill
+     %\vspace{-1mm}
+     \begin{subfigure}[b]{0.99\textwidth}
+        \centering
+        \includegraphics[trim=95 18 75 20, clip, width=0.725\textwidth]{images/01_noise.eps}
+        %\caption{Superdiagnostic}
+        \label{fig:01noise}
+     \end{subfigure}
+     \hfill
+      \begin{subfigure}[b]{0.99\textwidth}
+        \centering
+        \includegraphics[trim=95 18 75 20, clip, width=0.725\textwidth]{images/05_noise.eps}
+        %\caption{Sub-diagnostic}
+        \label{fig:05noise}
+     \end{subfigure}
+        \hfill
+      \begin{subfigure}[b]{0.99\textwidth}
+        \centering
+        \includegraphics[trim=95 18 75 20, clip, width=0.725\textwidth]{images/1_noise.eps}
+        %\caption{Sub-diagnostic}
+        \label{fig:1noise}
+     \end{subfigure}
+    \caption{A randomly chosen ECG with no noise (at the top), $0.1\times\sigma$, $0.5\times\sigma$ and $1\times\sigma$ (at the bottom).
+    }
+    \label{fig:ecg_noise_ex}
+\end{figure}
+
+% TODO: add some examples of ECG with increasing noise added
+\begin{figure}[hp]
+     \centering
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_diagnostic.eps}
+        \caption{Diagnostic}
+        \label{fig:gridsearch_diag}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_superdiagnostic.eps}
+        \caption{Superdiagnostic}
+        \label{fig:gridsearch_superdiag}
+     \end{subfigure}
+     \hfill
+      \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_subdiagnostic.eps}
+        \caption{Sub-diagnostic}
+        \label{fig:gridsearch_subdiag}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_form.eps}
+        \caption{Form}
+        \label{fig:gridsearch_form}
+     \end{subfigure}
+          \hfill
+      \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_rhythm.eps}
+        \caption{Rhythm}
+        \label{fig:gridsearch_rhythm}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.45\textwidth}
+        %\centering
+        \includegraphics[width=1.0\textwidth]{images/noise_all.eps}
+        \caption{All}
+        \label{fig:gridsearch_all}
+     \end{subfigure}
+    \caption{Performance, in terms of area under the receiver operating characteristic (AUROC), achieved by the seven different models on the six different benchmark tasks at different levels of noise added to the test data. The added stochastic noise where centered around zero with upper and lower boundaries given in terms of the standard deviation, $\sigma$, of all samples in the ECG test data multiplied by a coefficient $x$. In this study, we ran experiments with $x=0$, $0.1$, $0.5$, and $1$. 
+    }
+    \label{fig:noise_spaghetti}
+\end{figure}
+\newpage
+ 
+\subsubsection{Proposing a new model}
+The optimal parameter combination of the Inception Time model, for each of the six benchmark tasks, is presented in Table~\ref{tab:HPsearch}. In addition to the different parameters, the table also presents the cross-validated score (3 folds) obtained on the subset of the training data that was used for hyperparameter optimization. 
+
+
+\begin{table}[hp]
+\scriptsize
+\centering
+\caption{Results from hyperparameter search Inception time }
+\begin{tabular}{lllllll}
+\cellcolor[HTML]{C0C0C0}\textbf{Parameter and score } & \cellcolor[HTML]{C0C0C0}\textbf{All} &
+\cellcolor[HTML]{C0C0C0}\textbf{diagnostic} &
+\cellcolor[HTML]{C0C0C0}\textbf{subdiagnostic} &
+\cellcolor[HTML]{C0C0C0}\textbf{superdiagnostic} &
+\cellcolor[HTML]{C0C0C0}\textbf{form} &
+\cellcolor[HTML]{C0C0C0}\textbf{rhythm} \\\hline
+Epoch        & 15& 25& 15& 25& 25& 25 \\
+Batch size        & 16& 32& 64& 64& 64 & 16  \\
+Initial learning rate      & 0.001& 0.001& 0.001& 0.001& 0.001 & 0.001 \\
+Learning rate reduction        & no& no& no& yes& no& no  \\
+Model depth                & 9& 6& 6& 12& 6& 9 \\
+Loss function          & *BCE& *BCE& **WBCE& *BCE& *BCE& **WBCE  \\
+Kernel size     & (60,30,15)& (60,30,15)& (20,10,5)& (40,20,10)& (20,10,5)& (40,20,10)  \\\\
+AUROC score (mean 3 fold CV)    & 0.887& 0.870& 0.878& 0.895& 0.800& 0.915  \\\hline 
+\end{tabular}
+\raggedright
+*BCE = Binary cross-entropy\\
+**BCE = Weighted binary cross-entropy
+\label{tab:HPsearch}
+\end{table}
+
+The final score on the test set, after training the models with the optimal configurations found in Table~\ref{tab:HPsearch} on the whole training data set, are shown in Table~\ref{tab:InceptionTime_score} 
+
+
+\begin{table}[hp]
+\scriptsize
+\caption{Results achieved by the proposed Inception Time model on the six benchmark tasks with the optimal configurations found from grid search. The scores are given in terms of area under the receiver operating characteristic (AUROC) and the numbers in parenthesis represent the 95\% confidential interval. }
+\begin{tabular}{lllllll}
+\cellcolor[HTML]{C0C0C0}\textbf{Model} & \cellcolor[HTML]{C0C0C0}\textbf{All} & \cellcolor[HTML]{C0C0C0}\textbf{Diagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Subdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Superdiagnostic} & \cellcolor[HTML]{C0C0C0}\textbf{Form} & \cellcolor[HTML]{C0C0C0}\textbf{Rhythm} \\\hline
+Inception Time (all)              & 0.926(08) &  &  &  &  &  \\
+Inception Time (diagnostic)       &  & 0.929(09) &  &  &  &  \\
+Inception Time (subdiagnostic)    &  &  & 0.927(08) & & &  \\
+Inception Time (superdiagnostic)  &  &  &  & 0.922(06) & &  \\
+Inception Time (form)             &  &  &  &  & 0.840(11) &  \\
+Inception Time (rhythm)           &  &  &  &  &  & 0.923(32) \\\hline                           
+\end{tabular}
+\label{tab:InceptionTime_score}
+\end{table}
+
+
+
+
+\section{Discussion}
+We successfully reproduced the most important results presented in Strodthoff et al. The results show that the mean of our repeated bootstrap experiments is within the 95\% confidence interval presented in Strodthoff et al., with only 2 out of the 48 scores showing slight deviations. Despite these minor discrepancies, the core observations from the original paper remain valid. Additionally, we have confirmed the second claim put forth in the original paper. This claim entails the availability of a framework template that facilitates the straightforward implementation of new model architectures. Utilizing this template, we successfully created a new model and applied it to the benchmark tasks.
+
+Interestingly the the end-to-end CNN performed well even with the additions of big noise portions to the ECG. Wavelet-based feature extraction combined with a dense neural network, on the other hand, had a steeper decline in performance when noise was added. A possible explanation is that some of the convolutional layers learn to suppress noise and effectively work as low/high-pass filters and thus perform better as a feature extractor than a static wavelet.
+
+The Inception Time model proposed and implemented in this paper exhibits performance that closely matches that of the leading CNN models proposed by Strodthoff et al. across all six benchmark tasks. These results were somewhat contrary to our expectations since our proposed implementation of the Inception Time model had specialized configurations for each benchmark task. This shows that the models and the configurations proposed by Strodthoff et al. generally perform well across various ECG classification tasks. In future implementations and benchmark tests, one could try a larger search space in the grid search or potentially employ Bayesian hyperparameter tuning.
+
+%\textit{Give your judgement on if your experimental results support the claims of the paper. Discuss the strengths and weaknesses of your approach - perhaps you didn't have time to run all the experiments, or perhaps you did additional experiments that further strengthened the claims in the paper.}
+
+\subsection{What was easy}
+%Give your judgement of what was easy to reproduce. Perhaps the author's code is clearly written and easy to run, so it was easy to verify the majority of original claims. Or, the explanation in the paper was really easy to follow and put into code. 
+
+%Be careful not to give sweeping generalizations. Something that is easy for you might be difficult to others. Put what was easy in context and explain why it was easy (e.g. code had extensive API documentation and a lot of examples that matched experiments in papers). 
+
+When the code was successfully modified to be run in Google Colab it was easy to reproduce the results of Strodthoff et al. by simply running the reproduce\_results.py script. It was also easy to add random noise to the ECGs in the test data to assess the model's robustness to noise.
+
+
+\subsection{What was difficult}
+%List part of the reproduction study that took more time than you anticipated or you felt were difficult. 
+
+%Be careful to put your discussion in context. For example, don't say "the maths was difficult to follow", say "the math requires advanced knowledge of calculus to follow". 
+
+Implementing our proposed model using the templates in the GitHub repository took more time than we expected. We faced some errors when adding our proposed model to be tested on the benchmark tasks using the reproduce\_results.py script. The error occurred because we oversaw some details in the configuration file. A more detailed explanation in the README file on how to add a custom model could mitigate future misunderstandings. 
+
+
+
+\subsection{Communication with original authors}
+%Document the extent of (or lack of) communication with the original authors. To make sure the reproducibility report is a fair assessment of the original research we recommend getting in touch with the original authors. You can ask authors specific questions, or if you don't have any questions you can send them the full report to get their feedback before it gets published. 
+
+At the beginning of this replication study, we established communication with the authors of the paper. During the development and writing process, we got answers to all our questions and helped to submit our proposed model by performing a pull request to the original GitHub repository. The draft of this report was finally sent to the authors of the original paper to get their feedback before submission. 
