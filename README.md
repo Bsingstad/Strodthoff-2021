@@ -22,10 +22,29 @@ The dataset (PTB-XL) will be downloaded from the [original data repository](http
 ### Dependencies
 A [custom version of Fast AI](https://github.com/Bsingstad/fastai) was created to make the original repository compatible with Google Colab notebooks. This is taken care of in code cell 11 in `PTB_XL_experiments.ipynb`.
 
-## Results
+### Hyperparameter search
+To perform hyperparameter search for our Inception Time model we first made a file describing all parameter combinations using `make_gridsearch_file.ipynb`, resulting in `gridsearch_params.csv`. Furthermore, we use this .csv file in `Gridsearch.ipynb`.
 
-We encourage other authors to share their results on this dataset by submitting a PR. The evaluation proceeds as described in the manuscripts:
-The reported scores are test set scores (fold 10) as output of the above evaluation procedure and should **not be used for hyperparameter tuning or model selection**. In the provided code, we use folds 1-8 for training, fold 9 as validation set and fold 10 as test set. We encourage to submit also the prediction results (`preds`, `targs`, `classes` saved as numpy arrays `preds_x.npy` and `targs_x.npy` and `classes_x.npy`) to ensure full reproducibility and to make source code and/or pretrained models available.
+
+## Results
+### Replicating results from Strodthoff et al.
+The table presented below show the replicated results of Strodthoff et al. The results are obtained taking the mean of repeated (3 times) bootstrapping on the test set.
+
+| Method | All | Diagnostic | Subdiagnostic | Superdiagnostic | Form | Rhythm |
+|----------------------------------------|--------------------------------------|---------------------------------------------|------------------------------------------------|--------------------------------------------------|---------------------------------------|-----------------------------------------|
+| fastai_inception1d                    |  0.926           |  0.930                  |  0.930                     |  0.918                       |  0.891            |  0.953              |
+| fastai_xresnet1d101                   |  0.925           |  0.934                  |  0.926                     |  0.929                       |  0.898            |  0.959              |
+| fastai_resnet1d\_wang                 | 0.919           | 0.932                  | 0.932                     | 0.929                       | 0.873            | 0.943              |
+| fastai_fcn_wang                      | 0.913           | 0.927                  | 0.922                     | 0.926                       | 0.868            | 0.928              |
+| fastai_lstm                           | 0.906           | 0.926                  | 0.928                     | 0.927                       | 0.849            | 0.950              |
+| fastai_lstm_bidir                    | 0.915           | 0.929                  | 0.924                     | 0.924                       | 0.856              |  0.949              |
+| Wavelet+NN                             | 0.837           | 0.834                    | 0.847                     | 0.871                       | 0.765            | 0.879              |
+| ensemble                               | 0.927           | 0.937                  | 0.935                     | 0.934                       | 0.901            | 0.966              |
+
+### Implementing a new model
+The following tables presents the results obtained in the original paper as well as the results obtained by the Inception Time model (**bold**) in this work.
+
+
 
  #### 1. PTB-XL: all statements
 
@@ -104,70 +123,3 @@ The reported scores are test set scores (fold 10) as output of the above evaluat
 | fcn_wang | 0.931(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
 | **Inception Time** | **0.923(32)** | **our work** | **this repo** |
 | Wavelet+NN | 0.890(24) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
-
-
-
-# References
-Please acknowledge our work by citing our journal paper
-
-    @article{Strodthoff:2020Deep,
-    doi = {10.1109/jbhi.2020.3022989},
-    url = {https://doi.org/10.1109/jbhi.2020.3022989},
-    year = {2021},
-    volume={25},
-    number={5},
-    pages={1519-1528},
-    publisher = {Institute of Electrical and Electronics Engineers ({IEEE})},
-    author = {Nils Strodthoff and Patrick Wagner and Tobias Schaeffter and Wojciech Samek},
-    title = {Deep Learning for {ECG} Analysis: Benchmarks and Insights from {PTB}-{XL}},
-    journal = {{IEEE} Journal of Biomedical and Health Informatics}
-    }
-
-For the PTB-XL dataset, please cite
-
-    @article{Wagner:2020PTBXL,
-    doi = {10.1038/s41597-020-0495-6},
-    url = {https://doi.org/10.1038/s41597-020-0495-6},
-    year = {2020},
-    publisher = {Springer Science and Business Media {LLC}},
-    volume = {7},
-    number = {1},
-    pages = {154},
-    author = {Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Dieter Kreiseler and Fatima I. Lunze and Wojciech Samek and Tobias Schaeffter},
-    title = {{PTB}-{XL},  a large publicly available electrocardiography dataset},
-    journal = {Scientific Data}
-    }
-
-    @misc{Wagner2020:ptbxlphysionet,
-    title={{PTB-XL, a large publicly available electrocardiography dataset}},
-    author={Patrick Wagner and Nils Strodthoff and Ralf-Dieter Bousseljot and Wojciech Samek and Tobias Schaeffter},
-    doi={10.13026/qgmg-0d46},
-    year={2020},
-    journal={PhysioNet}
-    }
-
-    @article{Goldberger2020:physionet,
-    author = {Ary L. Goldberger  and Luis A. N. Amaral  and Leon Glass  and Jeffrey M. Hausdorff  and Plamen Ch. Ivanov  and Roger G. Mark  and Joseph E. Mietus  and George B. Moody  and Chung-Kang Peng  and H. Eugene Stanley },
-    title = {{PhysioBank, PhysioToolkit, and PhysioNet}},
-    journal = {Circulation},
-    volume = {101},
-    number = {23},
-    pages = {e215-e220},
-    year = {2000},
-    doi = {10.1161/01.CIR.101.23.e215}
-    }
-
-If you use the [ICBEB challenge 2018 dataset](http://2018.icbeb.org/Challenge.html) please acknowledge
-
-    @article{liu2018:icbeb,
-    doi = {10.1166/jmihi.2018.2442},
-    year = {2018},
-    month = sep,
-    publisher = {American Scientific Publishers},
-    volume = {8},
-    number = {7},
-    pages = {1368--1373},
-    author = {Feifei Liu and Chengyu Liu and Lina Zhao and Xiangyu Zhang and Xiaoling Wu and Xiaoyan Xu and Yulin Liu and Caiyun Ma and Shoushui Wei and Zhiqiang He and Jianqing Li and Eddie Ng Yin Kwee},
-    title = {{An Open Access Database for Evaluating the Algorithms of Electrocardiogram Rhythm and Morphology Abnormality Detection}},
-    journal = {Journal of Medical Imaging and Health Informatics}
-    }
