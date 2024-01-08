@@ -1,193 +1,111 @@
-# Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL
-This repository is accompanying our article [Deep Learning for ECG Analysis: Benchmarks
-and Insights from PTB-XL](https://doi.org/10.1109/jbhi.2020.3022989), which builds on the [PTB-XL dataset](https://www.nature.com/articles/s41597-020-0495-6). 
-It allows to reproduce the ECG benchmarking experiments described in the paper and to benchmark
-user-provided models within our framework. We also maintain a leaderboard for the described PTB-XL dataset
-on this page, so feel free to submit your results as PRs.
+# [Re] Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL
+## A replication of Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL by Strodthoff et al. 2021
 
-Please acknowledge our work by citing the corresponding articles listed in **References** below.
+This github repository comprises our code replicating the experiments reported in *Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL*
 
-
-## Setup
-
-### Install dependencies
-Install the dependencies (wfdb, pytorch, torchvision, cudatoolkit, fastai, fastprogress) by creating a conda environment:
-
-    conda env create -f ecg_env.yml
-    conda activate ecg_env
-
-### Get data
-Download and prepare the datasets (PTB-XL and ICBEB) via the follwing bash-script:
-
-    ./get_datasets.sh
-
-This script first downloads [PTB-XL from PhysioNet](https://physionet.org/content/ptb-xl/) and stores it in `data/ptbxl/`. 
-Afterwards all training data from the [ICBEB challenge 2018](http://2018.icbeb.org/Challenge.html) is downloaded and temporally stored in `tmp_data/`. 
-After downloading and unzipping `code/utils/convert_ICBEB.py` is called which stores the data in appropriate format in `data/ICBEB/`. 
-
-## Reproduce results from the paper
-
-Change directory: `cd code` and then call
-
-    python reproduce_results.py
-
-This will perform all experiments for all models used in the paper. 
-Depending on the executing environment, this will take up to several hours. 
-Once finished, all trained models, predictions and results are stored in `output/`, 
-where for each experiment a sub-folder is created each with `data/`, `models/` and `results/` sub-sub-folders. 
-
-### Download models and results
-
-We also provide a [compressed zip-archive](https://datacloud.hhi.fraunhofer.de/s/gLkjQL94d7FXBbS) containing the `output` folder corresponding to our runs including trained models and predictions from our runs mentioned in the leaderboard below. 
-
-## Benchmarking user-provided models
-For creating custom benchmarking results our recommendation is as follows:
-
-1. create your model `code/models/your_model.py` which implements a standard classifier interface with `fit(X_train, y_train, X_val, y_val)` and `predict(X)`
-2. create a config file `code/configs/your_configs.py` with name, type and parameters (if needed)
-3. add your modeltype and model import to the cases in `perform`-function of `code/experiments/scp_experiment.py` (already added for demonstration purpose!)
-4. add your model-config to `models` and perform your experiment as below (adjusted code of `code/reproduce_results.py`):
-
-```python
-from experiments.scp_experiment import SCP_Experiment
-from configs.your_custom_configs import your_custom_config
-
-datafolder = '../data/ptbxl/'
-outputfolder = '../output/'
-
-models = [your_custom_config]
-
-e = SCP_Experiment('your_custom_experiment', 'diagnostic', datafolder, outputfolder, models)
-e.prepare()
-e.perform()
-e.evaluate()
-```
-
-### Notes on e.evaluate()
-Altough we recommend to use our framework, custom evaluation of custom models is still possible via calling `code.utils.utils.evaluate_experiment(y_true, y_pred, thresholds)` 
-manually with classwise thresholds. 
-
-For `e.evaluate()`: If the name of the experiment is `exp_ICBEB` classifier thresholds are needed. 
-In any other case `evaluate_experiment(y_true, y_pred)` will return a dictionary with `macro_auc` and `Fmax` (both metrics are **without any explicitly needed thresholds**). 
-In case of `exp_ICBEB` we offer two functions for computing thresholds (located in `code/utils/utils.py`):
-
-1. `thresholds = utils.find_optimal_cutoff_thresholds(y_train, y_train_pred)`
-2. `thresholds = utils.find_optimal_cutoff_thresholds_for_Gbeta(y_train, y_train_pred)`
-
-In addition to `macro_auc` and `Fmax` `evaluate_experiment(y_true, y_pred, thresholds)` will return `F_beta_macro` and `G_beta_macro` as proposed in the physionet-challenge.
-
-### Notes on bootstrapping
-Since bootstrapping results might take a while (even in parallel as in our code), we offer a flag for evaluation `e.evaluate(bootstrap_eval=False)` which just performs one single whole sample evaluation. 
-
-**If you want to bootstrap your results:** In each respective experiment-folder `output/exp_*/` the bootstrapping ids for training, 
-testing and validation is stored as numpy-arrays containing lists of ids. Otherwise create manually with `utils.get_appropriate_bootstrap_samples(y_train, n_bootstraping_samples)`. For sequential evaluation of those ids, the code might look like:
-
-```python
-if experiment_name == 'exp_ICBEB':
-    thresholds = utils.find_optimal_cutoff_thresholds(y_train, y_train_pred)
-else:
-    thresholds = None
-
-train_bootstrap_samples = np.array(utils.get_appropriate_bootstrap_samples(y_train, n_bootstraping_samples))
-tr_df = pd.concat([utils.evaluate_experiment(y_train[ids], y_train_pred[ids], thresholds) for ids in train_bootstrap_samples])
-
-tr_df.quantile(0.05), tr_df.mean(), tr_df.quantile(0.95)
-```
-
-### Notes on Finetuning
-In [this jupyter notebook](https://github.com/helme/ecg_ptbxl_benchmarking/blob/master/code/Finetuning-Example.ipynb) we provide a basic example of how to finetune our provided models on your custom dataset.
+Full reference to the original paper :
+> N. Strodthoff, P. Wagner, T. Schaeffter, and W. Samek, ‘Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL’, IEEE Journal of Biomedical and Health Informatics, vol. 25, no. 5, pp. 1519–1528, May 2021, doi: 10.1109/JBHI.2020.3022989.
 
 
+Original github repository: https://github.com/helme/ecg_ptbxl_benchmarking
 
-## Leaderboard
+The main goal of this project was to reproduce the results from Strodthoff et al (2021). In addition, we tested the robustness of the proposed models by adding random noise to the ECGs in the test set. Finally, we  used the provided template to implement a new model and evaluated it on the six benchmark tasks described in Strodthoff et al.
 
-We encourage other authors to share their results on this dataset by submitting a PR. The evaluation proceeds as described in the manuscripts: 
+
+## Setup and requirements
+
+To re-run our replication experiments, simply upload the notebook `PTB_XL_experiments.ipynb` to [Google colab](https://colab.research.google.com/) and run the code cells. In the second code cell you will be asked to mount your Google Drive to the Google colab notebook. This is not mandatory, but it is recommended if you want to store the results the experiments.
+
+### Data
+The dataset (PTB-XL) will be downloaded from the [original data repository](https://physionet.org/content/ptb-xl/1.0.3/)  in the 5th code cell of the `PTB_XL_experiments.ipynb` notebook.
+
+### Dependencies
+A [custom version of Fast AI](https://github.com/Bsingstad/fastai) was created to make the original repository compatible with Google Colab notebooks. This is taken care of in code cell 11 in `PTB_XL_experiments.ipynb`.
+
+## Results
+
+We encourage other authors to share their results on this dataset by submitting a PR. The evaluation proceeds as described in the manuscripts:
 The reported scores are test set scores (fold 10) as output of the above evaluation procedure and should **not be used for hyperparameter tuning or model selection**. In the provided code, we use folds 1-8 for training, fold 9 as validation set and fold 10 as test set. We encourage to submit also the prediction results (`preds`, `targs`, `classes` saved as numpy arrays `preds_x.npy` and `targs_x.npy` and `classes_x.npy`) to ensure full reproducibility and to make source code and/or pretrained models available.
 
- ### 1. PTB-XL: all statements 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| inception1d | 0.925(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| xresnet1d101 | 0.925(07) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.919(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.918(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.914(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.907(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.849(13) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+ #### 1. PTB-XL: all statements
 
- ### 2. PTB-XL: diagnostic statements 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| xresnet1d101 | 0.937(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.936(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.932(07) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| inception1d | 0.931(09) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.927(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.926(10) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.855(15) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| **Inception Time** | **0.926(08)** | **our work** | **this repo** |
+| inception1d | 0.925(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| xresnet1d101 | 0.925(07) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| resnet1d_wang | 0.919(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.918(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm_bidir | 0.914(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm | 0.907(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| Wavelet+NN | 0.849(13) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
 
- ### 3. PTB-XL: Diagnostic subclasses 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| inception1d | 0.930(10) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| xresnet1d101 | 0.929(14) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.928(10) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.928(10) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.927(11) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.923(12) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.859(16) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+ #### 2. PTB-XL: diagnostic statements
 
- ### 4. PTB-XL: Diagnostic superclasses 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| resnet1d_wang | 0.930(05) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| xresnet1d101 | 0.928(05) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.927(05) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.925(06) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| inception1d | 0.921(06) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.921(06) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.874(07) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| xresnet1d101 | 0.937(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| resnet1d_wang | 0.936(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm_bidir | 0.932(07) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| inception1d | 0.931(09) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| **Inception Time** | **0.929(09)** | **our work** | **this repo** |
+| lstm | 0.927(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.926(10) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| Wavelet+NN | 0.855(15) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
 
- ### 5. PTB-XL: Form statements 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| inception1d | 0.899(22) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| xresnet1d101 | 0.896(12) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.880(15) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.876(15) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.869(12) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.851(15) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.757(29) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+ #### 3. PTB-XL: Diagnostic subclasses
 
- ### 6. PTB-XL: Rhythm statements 
- 
-| Model | AUC &darr; | paper/source | code | 
-|---:|:---|:---|:---| 
-| xresnet1d101 | 0.957(19) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| inception1d | 0.953(13) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.953(09) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.949(11) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.946(10) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.931(08) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.890(24) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| inception1d | 0.930(10) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| xresnet1d101 | 0.929(14) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm | 0.928(10) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| resnet1d_wang | 0.928(10) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.927(11) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| **Inception Time** | **0.927(08)** | **our work** | **this repo** |
+| lstm_bidir | 0.923(12) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| Wavelet+NN | 0.859(16) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+
+ #### 4. PTB-XL: Diagnostic superclasses
+
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| resnet1d_wang | 0.930(05) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| xresnet1d101 | 0.928(05) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm | 0.927(05) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.925(06) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| **Inception Time** | **0.922(06)** | **our work** | **this repo** |
+| inception1d | 0.921(06) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm_bidir | 0.921(06) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| Wavelet+NN | 0.874(07) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+
+ #### 5. PTB-XL: Form statements
+
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| inception1d | 0.899(22) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| xresnet1d101 | 0.896(12) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| resnet1d_wang | 0.880(15) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm_bidir | 0.876(15) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.869(12) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm | 0.851(15) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| **Inception Time** | **0.840(11)** | **our work** | **this repo** |
+| Wavelet+NN | 0.757(29) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+
+ #### 6. PTB-XL: Rhythm statements
+
+| Model | AUC &darr; | paper/source | code |
+|---:|:---|:---|:---|
+| xresnet1d101 | 0.957(19) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| inception1d | 0.953(13) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm | 0.953(09) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| lstm_bidir | 0.949(11) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| resnet1d_wang | 0.946(10) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| fcn_wang | 0.931(08) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
+| **Inception Time** | **0.923(32)** | **our work** | **this repo** |
+| Wavelet+NN | 0.890(24) | [original work](https://doi.org/10.1109/jbhi.2020.3022989) | [code](https://github.com/helme/ecg_ptbxl_benchmarking/)|
 
 
-### 7. ICBEB: All statements
-
-| Model | AUC &darr; |  F_beta=2 | G_beta=2 | paper/source | code | 
-|---:|:---|:---|:---|:---|:---| 
-| xresnet1d101 | 0.974(05) | 0.819(30) | 0.602(37) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| resnet1d_wang | 0.969(06) | 0.803(31) | 0.586(37) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm | 0.964(06) | 0.790(31) | 0.561(37) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| inception1d | 0.963(09) | 0.807(30) | 0.594(41) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| lstm_bidir | 0.959(11) | 0.796(31) | 0.573(36) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| fcn_wang | 0.957(08) | 0.787(31) | 0.563(37) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
-| Wavelet+NN | 0.905(14) | 0.665(34) | 0.405(36) | [our work](https://doi.org/10.1109/jbhi.2020.3022989) | [this repo](https://github.com/helme/ecg_ptbxl_benchmarking/)| 
 
 # References
 Please acknowledge our work by citing our journal paper
@@ -204,7 +122,7 @@ Please acknowledge our work by citing our journal paper
     title = {Deep Learning for {ECG} Analysis: Benchmarks and Insights from {PTB}-{XL}},
     journal = {{IEEE} Journal of Biomedical and Health Informatics}
     }
-	
+
 For the PTB-XL dataset, please cite
 
     @article{Wagner:2020PTBXL,
@@ -238,7 +156,7 @@ For the PTB-XL dataset, please cite
     year = {2000},
     doi = {10.1161/01.CIR.101.23.e215}
     }
-    
+
 If you use the [ICBEB challenge 2018 dataset](http://2018.icbeb.org/Challenge.html) please acknowledge
 
     @article{liu2018:icbeb,
