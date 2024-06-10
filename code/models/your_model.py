@@ -32,9 +32,15 @@ class inception_time_model(ClassificationModel):
             callbacks = [tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0)])
         else:
             print("Error: wrong lr_red argument")
+                
     def predict(self, X):
         return self.model.predict(X)
 
+    def save_model(self, path):
+        self.model.save(path)
+        print("model saved.")
+
+        
 
 def _inception_module(input_tensor, stride=1, activation='linear', use_bottleneck=True, kernel_size=40, bottleneck_size=32, nb_filters=32):
 
