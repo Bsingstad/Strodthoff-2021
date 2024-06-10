@@ -10,19 +10,19 @@ def main(datafolder, datafolder_icbeb, outputfolder):
 
 
     models = [
-        conf_fastai_xresnet1d101,
-        conf_fastai_resnet1d_wang,
-        conf_fastai_lstm,
-        conf_fastai_lstm_bidir,
-        conf_fastai_fcn_wang,
-        conf_fastai_inception1d,
-        conf_wavelet_standard_nn,
-        conf_tf_inception,
-        conf_tf_inception_all,
-        conf_tf_inception_diagnostic,
-        conf_tf_inception_form,
-        conf_tf_inception_rhythm,
-        conf_tf_inception_subdiagnostic,
+        #conf_fastai_xresnet1d101,
+        #conf_fastai_resnet1d_wang,
+        #conf_fastai_lstm,
+        #conf_fastai_lstm_bidir,
+        #conf_fastai_fcn_wang,
+        #conf_fastai_inception1d,
+        #conf_wavelet_standard_nn,
+        #conf_tf_inception,
+        #conf_tf_inception_all,
+        #conf_tf_inception_diagnostic,
+        #conf_tf_inception_form,
+        #conf_tf_inception_rhythm,
+        #conf_tf_inception_subdiagnostic,
         conf_tf_inception_superdiagnostic
         ]
 
@@ -31,12 +31,12 @@ def main(datafolder, datafolder_icbeb, outputfolder):
     ##########################################
 
     experiments = [
-        ('exp0', 'all'),
-        ('exp1', 'diagnostic'),
-        ('exp1.1', 'subdiagnostic'),
+        #('exp0', 'all'),
+        #('exp1', 'diagnostic'),
+        #('exp1.1', 'subdiagnostic'),
         ('exp1.1.1', 'superdiagnostic'),
-        ('exp2', 'form'),
-        ('exp3', 'rhythm')
+        #('exp2', 'form'),
+        #('exp3', 'rhythm')
        ]
 
     for name, task in experiments:
