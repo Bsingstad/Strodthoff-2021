@@ -122,7 +122,7 @@ class SCP_Experiment():
             plt.plot(self.X_test[0,:,0])
             plt.show()
             model.predict(self.X_test).dump(mpath+'y_test_pred.npy')
-            model.save(mpath + "inception_superdiag.h5")
+            model.save_model(mpath + "inception_superdiag.h5")
 
         modelname = 'ensemble'
         # create ensemble predictions via simple mean across model predictions (except naive predictions)
