@@ -122,6 +122,7 @@ class SCP_Experiment():
             plt.plot(self.X_test[0,:,0])
             plt.show()
             model.predict(self.X_test).dump(mpath+'y_test_pred.npy')
+            model.save(mpath + "inception_superdiag.h5")
 
         modelname = 'ensemble'
         # create ensemble predictions via simple mean across model predictions (except naive predictions)
@@ -135,7 +136,7 @@ class SCP_Experiment():
         ensemble_train, ensemble_val, ensemble_test = [],[],[]
         for model_description in os.listdir(self.outputfolder+self.experiment_name+'/models/'):
             if not model_description in ['ensemble', 'naive']:
-                mpath = self.outputfolder+self.experiment_name+'/models/'+model_description+'/'
+                mpath = self.outputfolder+self.experiment_name+'//'+model_description+'/'
                 ensemble_train.append(np.load(mpath+'y_train_pred.npy', allow_pickle=True))
                 ensemble_val.append(np.load(mpath+'y_val_pred.npy', allow_pickle=True))
                 ensemble_test.append(np.load(mpath+'y_test_pred.npy', allow_pickle=True))
