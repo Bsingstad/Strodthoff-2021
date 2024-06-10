@@ -60,7 +60,7 @@ def main(datafolder, datafolder_icbeb, outputfolder):
     e.evaluate()
 
     # generate greate summary table
-    utils.ICBEBE_table(folder=outputfolder)
+    #utils.ICBEBE_table(folder=outputfolder)
 
 if __name__ == "__main__":
     if not (len(sys.argv) == 4):
