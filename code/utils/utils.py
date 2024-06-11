@@ -306,7 +306,8 @@ def select_data(XX,YY, ctype, min_samples, outputfolder):
         y = mlb.transform(Y.all_scp.values)
     else:
         pass
-
+    # print classes
+    print(mlb.classes_)
     # save LabelBinarizer
     with open(outputfolder+'mlb.pkl', 'wb') as tokenizer:
         pickle.dump(mlb, tokenizer)
