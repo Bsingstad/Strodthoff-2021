@@ -3,7 +3,7 @@ from utils import utils
 # model configs
 from configs.fastai_configs import *
 from configs.wavelet_configs import *
-from configs.your_configs import *
+from code.configs.tf_inception_time_config import *
 import sys
 
 def main(datafolder, datafolder_icbeb, outputfolder):

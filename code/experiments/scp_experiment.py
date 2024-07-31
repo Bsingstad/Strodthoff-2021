@@ -110,7 +110,7 @@ class SCP_Experiment():
                 model = fastai_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
             elif modeltype == "inception_time_model":
                 # YOUR MODEL GOES HERE!
-                from models.your_model import inception_time_model
+                from code.models.inception_time import inception_time_model
                 model = inception_time_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
             else:
                 assert(True)
