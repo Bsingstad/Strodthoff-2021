@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import multiprocessing
 from itertools import repeat
-import matplotlib.pyplot as plt
 
 class SCP_Experiment():
     '''
@@ -124,8 +123,6 @@ class SCP_Experiment():
             # predict and dump
             model.predict(self.X_train).dump(mpath+'y_train_pred.npy')
             model.predict(self.X_val).dump(mpath+'y_val_pred.npy')
-            plt.plot(self.X_test[0,:,0])
-            plt.show()
             model.predict(self.X_test).dump(mpath+'y_test_pred.npy')
 
         modelname = 'ensemble'
