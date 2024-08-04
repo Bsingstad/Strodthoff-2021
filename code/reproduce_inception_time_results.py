@@ -1,69 +1,43 @@
 from experiments.scp_experiment import SCP_Experiment
 from utils import utils
-# model configs
-from configs.fastai_configs import *
-from configs.wavelet_configs import *
-from code.configs.tf_inception_time_config import *
-import sys
+from code.configs.tf_inception_time_config import conf_tf_inception_all, conf_tf_inception_diagnostic, conf_tf_inception_form, conf_tf_inception_rhythm, conf_tf_inception_subdiagnostic, conf_tf_inception_superdiagnostic
 
-def main(datafolder, datafolder_icbeb, outputfolder):
+def main():
     
+    datafolder = '../data/ptbxl/'
+    datafolder_icbeb = '../data/ICBEB/'
+    outputfolder = '../output/'
 
-    models = [
-        #conf_fastai_xresnet1d101,
-        #conf_fastai_resnet1d_wang,
-        #conf_fastai_lstm,
-        #conf_fastai_lstm_bidir,
-        #conf_fastai_fcn_wang,
-        #conf_fastai_inception1d,
-        #conf_wavelet_standard_nn,
-        conf_tf_inception,
-        conf_tf_inception_all,
-        conf_tf_inception_diagnostic,
-        conf_tf_inception_form,
-        conf_tf_inception_rhythm,
-        conf_tf_inception_subdiagnostic,
-        conf_tf_inception_superdiagnostic
-        ]
-
-    ##########################################
-    # STANDARD SCP EXPERIMENTS ON PTBXL
-    ##########################################
-
-    experiments = [
-        ('exp0', 'all'),
-        ('exp1', 'diagnostic'),
-        ('exp1.1', 'subdiagnostic'),
-        ('exp1.1.1', 'superdiagnostic'),
-        ('exp2', 'form'),
-        ('exp3', 'rhythm')
-       ]
-
-    for name, task in experiments:
-        print(name)
-        print(task)
-        e = SCP_Experiment(name, task, datafolder, outputfolder, models)
-        e.prepare()
-        e.perform()
-        e.evaluate(n_bootstraping_samples=100, bootstrap_eval=True, dumped_bootstraps=False)
-
-    # generate greate summary table
-    utils.generate_ptbxl_summary_table(folder = outputfolder)
-
-    ##########################################
-    # EXPERIMENT BASED ICBEB DATA
-    ##########################################
-
-    e = SCP_Experiment('exp_ICBEB', 'all', datafolder_icbeb, outputfolder, models)
+    # perform each experiment one after another
+    e = SCP_Experiment('custom_exp_name_1', 'all', datafolder, outputfolder, [conf_tf_inception_all])
     e.prepare()
     e.perform()
     e.evaluate()
 
-    # generate greate summary table
-    utils.ICBEBE_table(folder=outputfolder)
+    e = SCP_Experiment('custom_exp_name_2', 'diagnostic', datafolder, outputfolder, [conf_tf_inception_diagnostic])
+    e.prepare()
+    e.perform()
+    e.evaluate()
+
+    e = SCP_Experiment('custom_exp_name_3', 'subdiagnostic', datafolder, outputfolder, [conf_tf_inception_subdiagnostic])
+    e.prepare()
+    e.perform()
+    e.evaluate()
+
+    e = SCP_Experiment('custom_exp_name_4', 'superdiagnostic', datafolder, outputfolder, [conf_tf_inception_superdiagnostic])
+    e.prepare()
+    e.perform()
+    e.evaluate()
+
+    e = SCP_Experiment('custom_exp_name_5', 'form', datafolder, outputfolder, [conf_tf_inception_form])
+    e.prepare()
+    e.perform()
+    e.evaluate()
+
+    e = SCP_Experiment('custom_exp_name_6', 'rhythm', datafolder, outputfolder, [conf_tf_inception_rhythm])
+    e.prepare()
+    e.perform()
+    e.evaluate()
 
 if __name__ == "__main__":
-    if not (len(sys.argv) == 4):
-        raise Exception('Include the data and model folders as arguments, e.g., python reproduce_results.py ./path/to/data/ ./path/to/icbeb/ ./path/to/output/')
-    else:
-        main(datafolder = sys.argv[1], datafolder_icbeb = sys.argv[2], outputfolder = sys.argv[3])
+    main()

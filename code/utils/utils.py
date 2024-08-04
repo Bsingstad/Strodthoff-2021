@@ -405,7 +405,7 @@ def generate_ptbxl_summary_table(selection=None, folder: str="../output/"):
             md_source += '| ' + row[0].replace('fastai_', '') + ' | ' + row[1] + ' | [our work]('+our_work+') | [this repo]('+our_repo+')| \n'
     print(md_source)
 
-def ICBEBE_table(selection=None, folder:str="../output/"):
+def ICBEBE_table(selection=None, folder:str="./your/path/to/icbeb/"):
     cols = ['macro_auc', 'F_beta_macro', 'G_beta_macro']
 
     if selection is None:
