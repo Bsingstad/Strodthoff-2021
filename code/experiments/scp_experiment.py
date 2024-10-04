@@ -110,6 +110,10 @@ class SCP_Experiment():
                 # YOUR MODEL GOES HERE!
                 from models.your_model import inception_time_model
                 model = inception_time_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
+            elif modeltype == "next_time":
+                # YOUR MODEL GOES HERE!
+                from models.next_time import next_time_model
+                model = next_time_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape)
             else:
                 assert(True)
                 break
