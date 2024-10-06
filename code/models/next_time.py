@@ -58,8 +58,10 @@ class next_time_model(ClassificationModel):
         
 
     def fit(self, X_train, y_train, X_val, y_val):
+        callback = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_ROC",factor=0.1,
+        patience=3,mode="max")
         self.model.fit(X_train, y_train, epochs=self.epoch, batch_size=self.batch_size, 
-        validation_data=(X_val, y_val), verbose=self.verbose)
+        validation_data=(X_val, y_val), callbacks = [callback],verbose=self.verbose)
 
     def predict(self, X):
         return self.model.predict(X)
@@ -130,7 +132,7 @@ def ConvNeXt1D(depths, projection_dims, drop_path_rate=0.0, layer_scale_init_val
 
     return Model(inputs, x, name="convnext_1d")
 
-def build_model(input_shape, nb_classes, lr_init = 0.001, drop_path_rate=0.15):
+def build_model(input_shape, nb_classes, lr_init = 0.0001, drop_path_rate=0.15):
     model = ConvNeXt1D(
         depths=[4, 4, 12, 4], 
         projection_dims=[128, 256, 512, 1024], 
@@ -138,7 +140,7 @@ def build_model(input_shape, nb_classes, lr_init = 0.001, drop_path_rate=0.15):
         input_shape=input_shape,  
         num_classes=nb_classes
     )
-    callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
+    
     model.compile(loss=tf.keras.losses.BinaryFocalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate=lr_init), 
                     metrics=[tf.keras.metrics.BinaryAccuracy(),
                             tf.keras.metrics.AUC(
@@ -155,7 +157,6 @@ def build_model(input_shape, nb_classes, lr_init = 0.001, drop_path_rate=0.15):
                             name="PRC",
                             multi_label=True,
                             )],
-                    callbacks=[callback]
               )
     print("Inception model built.")
     return model
