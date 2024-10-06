@@ -44,7 +44,7 @@ class LayerScale(layers.Layer):
         return config
         
 class next_time_model(ClassificationModel):
-    def __init__(self, name, n_classes,  sampling_frequency, outputfolder, input_shape, epoch=30, batch_size=32, verbose=1):
+    def __init__(self, name, n_classes,  sampling_frequency, outputfolder, input_shape, epoch=20, batch_size=32, verbose=1):
         super(next_time_model, self).__init__()
         self.name = name
         self.n_classes = n_classes
@@ -77,9 +77,11 @@ def ConvNeXtBlock(projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-
             name=name + "_depthwise_conv",
         )(x)
         x = layers.LayerNormalization(epsilon=1e-6, name=name + "_layernorm")(x)
-        x = layers.Dense(4 * projection_dim, name=name + "_pointwise_conv_1")(x)
+        #x = layers.Dense(projection_dim, name=name + "_pointwise_conv_1")(x)
+        x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_1")(x)
         x = layers.Activation("gelu", name=name + "_gelu")(x)
-        x = layers.Dense(projection_dim, name=name + "_pointwise_conv_2")(x)
+        #x = layers.Dense(projection_dim, name=name + "_pointwise_conv_2")(x)
+        x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_2")(x)
 
         if layer_scale_init_value is not None:
             x = LayerScale(layer_scale_init_value, projection_dim, name=name + "_layer_scale")(x)
@@ -128,7 +130,7 @@ def ConvNeXt1D(depths, projection_dims, drop_path_rate=0.0, layer_scale_init_val
 
     return Model(inputs, x, name="convnext_1d")
 
-def build_model(input_shape, nb_classes, lr_init = 0.00042451, drop_path_rate=0.15):
+def build_model(input_shape, nb_classes, lr_init = 0.001, drop_path_rate=0.15):
     model = ConvNeXt1D(
         depths=[4, 4, 12, 4], 
         projection_dims=[128, 256, 512, 1024], 
@@ -136,7 +138,7 @@ def build_model(input_shape, nb_classes, lr_init = 0.00042451, drop_path_rate=0.
         input_shape=input_shape,  
         num_classes=nb_classes
     )
-
+    callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
     model.compile(loss=tf.keras.losses.BinaryFocalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate=lr_init), 
                     metrics=[tf.keras.metrics.BinaryAccuracy(),
                             tf.keras.metrics.AUC(
@@ -152,8 +154,9 @@ def build_model(input_shape, nb_classes, lr_init = 0.00042451, drop_path_rate=0.
                             summation_method='interpolation',
                             name="PRC",
                             multi_label=True,
-                            )
-              ])
+                            )],
+                    callbacks=[callback]
+              )
     print("Inception model built.")
     return model
 
