@@ -58,11 +58,11 @@ class next_time_model(ClassificationModel):
         
 
     def fit(self, X_train, y_train, X_val, y_val):
-        callback = tf.keras.callbacks.ReduceLROnPlateau(monitor="val_ROC",factor=0.1,
-        patience=3,mode="max")
+        callback = tf.keras.callbacks.ModelCheckpoint("./best_model.h5", monitor="val_ROC",
+        save_best_only=True, save_weights_only=True, mode="max", save_freq="epoch")
         self.model.fit(X_train, y_train, epochs=self.epoch, batch_size=self.batch_size, 
         validation_data=(X_val, y_val), callbacks = [callback],verbose=self.verbose)
-
+        self.model.load_weights("./best_model.h5")
     def predict(self, X):
         return self.model.predict(X)
 
