@@ -58,11 +58,11 @@ class next_time_model(ClassificationModel):
         
 
     def fit(self, X_train, y_train, X_val, y_val):
-        callback = tf.keras.callbacks.ModelCheckpoint("./best_model.h5", monitor="val_ROC",
+        callback = tf.keras.callbacks.ModelCheckpoint("./best_model.weights.h5", monitor="val_ROC",
         save_best_only=True, save_weights_only=True, mode="max", save_freq="epoch")
         self.model.fit(X_train, y_train, epochs=self.epoch, batch_size=self.batch_size, 
         validation_data=(X_val, y_val), callbacks = [callback],verbose=self.verbose)
-        self.model.load_weights("./best_model.h5")
+        self.model.load_weights("./best_model.weights.h5")
     def predict(self, X):
         return self.model.predict(X)
 
@@ -79,11 +79,11 @@ def ConvNeXtBlock(projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-
             name=name + "_depthwise_conv",
         )(x)
         x = layers.LayerNormalization(epsilon=1e-6, name=name + "_layernorm")(x)
-        #x = layers.Dense(projection_dim, name=name + "_pointwise_conv_1")(x)
-        x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_1")(x)
+        x = layers.Dense(projection_dim, name=name + "_pointwise_conv_1")(x)
+        #x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_1")(x)
         x = layers.Activation("gelu", name=name + "_gelu")(x)
-        #x = layers.Dense(projection_dim, name=name + "_pointwise_conv_2")(x)
-        x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_2")(x)
+        x = layers.Dense(projection_dim, name=name + "_pointwise_conv_2")(x)
+        #x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_2")(x)
 
         if layer_scale_init_value is not None:
             x = LayerScale(layer_scale_init_value, projection_dim, name=name + "_layer_scale")(x)
