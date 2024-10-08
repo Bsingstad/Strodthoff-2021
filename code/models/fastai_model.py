@@ -16,6 +16,7 @@ from models.xresnet1d import xresnet1d18,xresnet1d34,xresnet1d50,xresnet1d101,xr
 from models.inception1d import inception1d
 from models.basic_conv1d import fcn,fcn_wang,schirrmeister,sen,basic1d,weight_init
 from models.rnn1d import RNN1d
+from models.next_time_inception import Inception1dWithConvNeXt
 import math
 
 from models.base_model import ClassificationModel
@@ -394,6 +395,11 @@ class fastai_model(ClassificationModel):
             model = RNN1d(input_channels=self.input_channels,num_classes=num_classes,lstm=True,bidirectional=False,ps_head=self.ps_head,lin_ftrs_head=self.lin_ftrs_head)
         elif(self.name.startswith("fastai_gru")):
             model = RNN1d(input_channels=self.input_channels,num_classes=num_classes,lstm=False,bidirectional=False,ps_head=self.ps_head,lin_ftrs_head=self.lin_ftrs_head)
+        
+        #Next Time Inception
+        elif(self.name == "fastai_next_time_inception1d"):#note: order important for string capture
+            model = Inception1dWithConvNeXt(num_classes=num_classes,input_channels=self.input_channels,use_residual=False,ps_head=self.ps_head,lin_ftrs_head=self.lin_ftrs_head,kernel_size=8*self.kernel_size)
+
         else:
             print("Model not found.")
             assert(True)
