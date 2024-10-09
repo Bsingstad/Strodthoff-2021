@@ -142,7 +142,7 @@ def build_model(input_shape, nb_classes, lr_init = 0.001, drop_path_rate=0.15):
         num_classes=nb_classes
     )
     
-    model.compile(loss=tf.keras.losses.BinaryFocalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate=lr_init), 
+    model.compile(loss=tf.keras.losses.BinaryFocalCrossentropy(), optimizer=tf.keras.optimizers.AdamW(learning_rate=lr_init), 
                     metrics=[tf.keras.metrics.BinaryAccuracy(),
                             tf.keras.metrics.AUC(
                             num_thresholds=200,
