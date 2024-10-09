@@ -71,13 +71,14 @@ class next_time_model(ClassificationModel):
 def ConvNeXtBlock(projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-6, name=None):
     def apply(inputs):
         x = inputs
-        x = layers.Conv1D(
-            filters=projection_dim,
-            kernel_size=7,
-            padding="same",
-            groups=projection_dim,
-            name=name + "_depthwise_conv",
-        )(x)
+        #x = layers.Conv1D(
+        #    filters=projection_dim,
+        #    kernel_size=7,
+        #    padding="same",
+        #    groups=projection_dim,
+        #    name=name + "_depthwise_conv",
+        #)(x)
+        x = tf.keras.layers.DepthwiseConv1D(kernel_size=7, depth_multiplier = projection_dim//12, padding="same")(x)
         x = layers.LayerNormalization(epsilon=1e-6, name=name + "_layernorm")(x)
         x = layers.Dense(projection_dim * 4, name=name + "_pointwise_conv_1")(x)
         #x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_1")(x)

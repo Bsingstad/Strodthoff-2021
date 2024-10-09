@@ -12,7 +12,7 @@ def main(datafolder, datafolder_icbeb, outputfolder):
 
     models = [
         conf_tf_next_time,
-        conf_next_time_incept
+        #conf_next_time_incept
         ]
 
     ##########################################
