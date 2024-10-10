@@ -143,3 +143,6 @@ conf_fastai_fcn_wang_input500 = {'modelname':'fastai_fcn_wang_input500', 'modelt
 
 conf_next_time_incept = {'modelname':'next_time_incept', 'modeltype':'next_time_incept', 
     'parameters':dict()}
+
+conf_inception_next = {'modelname':'inception_next', 'modeltype':'inception_next', 
+    'parameters':dict()}

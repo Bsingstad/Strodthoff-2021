@@ -44,7 +44,7 @@ class LayerScale(layers.Layer):
         return config
         
 class next_time_model(ClassificationModel):
-    def __init__(self, name, n_classes,  sampling_frequency, outputfolder, input_shape, epoch=30, batch_size=32, verbose=1):
+    def __init__(self, name, n_classes,  sampling_frequency, outputfolder, input_shape, epoch=20, batch_size=32, verbose=1):
         super(next_time_model, self).__init__()
         self.name = name
         self.n_classes = n_classes
