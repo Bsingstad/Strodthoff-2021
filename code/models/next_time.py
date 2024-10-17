@@ -68,7 +68,7 @@ class next_time_model(ClassificationModel):
 
 
 
-def ConvNeXtBlock(projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-6, name=None):
+def ConvNeXtBlock(input_dim, projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-6, name=None):
     def apply(inputs):
         x = inputs
         #x = layers.Conv1D(
@@ -78,7 +78,7 @@ def ConvNeXtBlock(projection_dim, drop_path_rate=0.0, layer_scale_init_value=1e-
         #    groups=projection_dim,
         #    name=name + "_depthwise_conv",
         #)(x)
-        x = tf.keras.layers.DepthwiseConv1D(kernel_size=7, depth_multiplier = projection_dim//12, padding="same")(x)
+        x = tf.keras.layers.DepthwiseConv1D(kernel_size=7, depth_multiplier = projection_dim//input_dim, padding="same")(x)
         x = layers.LayerNormalization(epsilon=1e-6, name=name + "_layernorm")(x)
         x = layers.Dense(projection_dim * 4, name=name + "_pointwise_conv_1")(x)
         #x = layers.Conv1D(filters=projection_dim,kernel_size=1, padding="same",name=name + "_pointwise_conv_1")(x)
@@ -122,8 +122,12 @@ def ConvNeXt1D(depths, projection_dims, drop_path_rate=0.0, layer_scale_init_val
         if i > 0:
             x = layers.LayerNormalization(epsilon=1e-6, name=f"downsampling_layernorm_{i}")(x)
             x = layers.Conv1D(projection_dims[i], kernel_size=2, strides=2, name=f"downsampling_conv_{i}")(x)
+        if i == 0:
+            input_dim = 12
+        else:
+            input_dim = projection_dims[i-1]
         for j in range(depth):
-            x = ConvNeXtBlock(projection_dim=projection_dims[i], 
+            x = ConvNeXtBlock(input_dim = input_dim, projection_dim=projection_dims[i], 
                               drop_path_rate=depth_drop_rates[cur + j], 
                               layer_scale_init_value=layer_scale_init_value, 
                               name=f"stage_{i}_block_{j}")(x)
