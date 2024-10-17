@@ -132,10 +132,10 @@ class WaveletModel(ClassificationModel):
             
             self.model.compile(optimizer='adamax', loss='binary_crossentropy')#, metrics=[keras_macro_auroc])
             # monitor validation error
-            mc_loss = ModelCheckpoint(self.outputfolder +'best_loss_model.keras.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
+            mc_loss = ModelCheckpoint(self.outputfolder +'best_loss_model.keras', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
             #mc_score = ModelCheckpoint(self.outputfolder +'best_score_model.h5', monitor='val_keras_macro_auroc', mode='max', verbose=1, save_best_only=True)
             self.model.fit(XFT_train, y_train, validation_data=(XFT_val, y_val), epochs=self.epochs, batch_size=128, callbacks=[mc_loss])#, mc_score])
-            self.model.save(self.outputfolder +'last_model.keras.h5')
+            self.model.save(self.outputfolder +'last_model.keras')
 
     def predict(self, X):
         XF = get_ecg_features(X)
@@ -155,5 +155,5 @@ class WaveletModel(ClassificationModel):
         elif self.classifier == 'NN':
             ss = pickle.load(open(self.outputfolder+'ss.pkl', 'rb'))#
             XFT = ss.transform(XF)
-            model = load_model(self.outputfolder+'best_loss_model.keras.h5')#'best_score_model.h5', custom_objects={'keras_macro_auroc': keras_macro_auroc})
+            model = load_model(self.outputfolder+'best_loss_model.keras')#'best_score_model.h5', custom_objects={'keras_macro_auroc': keras_macro_auroc})
             return model.predict(XFT)
