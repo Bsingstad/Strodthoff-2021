@@ -100,6 +100,7 @@ class SCP_Experiment():
 
             n_classes = self.Y.shape[1]
             # load respective model
+            spectrogram = False
             if modeltype == 'WAVELET':
                 from models.wavelet import WaveletModel
                 model = WaveletModel(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
@@ -114,12 +115,15 @@ class SCP_Experiment():
                 # YOUR MODEL GOES HERE!
                 from models.next_time import next_time_model
                 model = next_time_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape)
+            elif modeltype == "transformer":
+                model = fastai_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
+                spectrogram = True
             else:
                 assert(True)
                 break
 
             # fit model
-            model.fit(self.X_train, self.y_train, self.X_val, self.y_val)
+            model.fit(self.X_train, self.y_train, self.X_val, self.y_val, spectrogram=spectrogram)
             # predict and dump
             model.predict(self.X_train).dump(mpath+'y_train_pred.npy')
             model.predict(self.X_val).dump(mpath+'y_val_pred.npy')

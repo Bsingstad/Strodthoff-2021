@@ -11,6 +11,7 @@ from fastai.callbacks.tracker import SaveModelCallback
 from pathlib import Path
 from functools import partial
 
+from models.transformer import StftTransform, turn_X_to_spectrograms, Transformer
 from models.resnet1d import resnet1d18,resnet1d34,resnet1d50,resnet1d101,resnet1d152,resnet1d_wang,resnet1d,wrn1d_22
 from models.xresnet1d import xresnet1d18,xresnet1d34,xresnet1d50,xresnet1d101,xresnet1d152,xresnet1d18_deep,xresnet1d34_deep,xresnet1d50_deep,xresnet1d18_deeper,xresnet1d34_deeper,xresnet1d50_deeper
 from models.inception1d import inception1d
@@ -207,7 +208,7 @@ class fastai_model(ClassificationModel):
         self.aggregate_fn = aggregate_fn
         self.concat_train_val = concat_train_val
 
-    def fit(self, X_train, y_train, X_val, y_val):
+    def fit(self, X_train, y_train, X_val, y_val, spectrogram=False):
         #convert everything to float32
         X_train = [l.astype(np.float32) for l in X_train]
         X_val = [l.astype(np.float32) for l in X_val]
@@ -239,6 +240,10 @@ class fastai_model(ClassificationModel):
         else: #finetuning
             print("Finetuning...")
             #create learner
+            if spectrogram == True:
+                X_train = turn_X_to_spectrograms(X_train)
+
+
             learn = self._get_learner(X_train,y_train,X_val,y_val,self.n_classes_pretrained)
             
             #load pretrained model
@@ -399,6 +404,9 @@ class fastai_model(ClassificationModel):
         #Next Time Inception
         elif(self.name == "fastai_next_time_inception1d"):#note: order important for string capture
             model = Inception1dWithConvNeXt(num_classes=num_classes,input_channels=self.input_channels,use_residual=False,ps_head=self.ps_head,lin_ftrs_head=self.lin_ftrs_head,kernel_size=8*self.kernel_size)
+
+        elif(self.name.startswith("transformer")):
+            model = Transformer(num_classes=num_classes, )
 
         else:
             print("Model not found.")
