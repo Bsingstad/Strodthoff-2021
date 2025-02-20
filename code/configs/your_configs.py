@@ -21,4 +21,4 @@ conf_tf_inception_superdiagnostic = {'modelname':'tf_inception_superdiagnostic',
     'parameters':dict(epoch=25, batch_size=64, lr_init=0.001 ,lr_red="yes", model_depth=12 , loss="bce" , kernel_size=40)}
 
 conf_xsresnet_plus = {'modelname':'xresnet_plus', 'modeltype':'xresnet_plus_model', 
-    'parameters':dict()}
+    'parameters':dict(epoch=50, batch_size=32, lr_init=0.001 ,lr_red="no", model_depth=6 , loss="bce" , kernel_size=20)}

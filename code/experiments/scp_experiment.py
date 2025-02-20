@@ -110,6 +110,11 @@ class SCP_Experiment():
                 # YOUR MODEL GOES HERE!
                 from models.your_model import inception_time_model
                 model = inception_time_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
+            elif modeltype == "xresnet_plus_model":
+                # YOUR MODEL GOES HERE!
+                from models.xresnet_plus import xresnet_plus_model
+                model = xresnet_plus_model(modelname, n_classes, self.sampling_frequency, mpath, self.input_shape, **modelparams)
+            
             else:
                 assert(True)
                 break
